@@ -1,7 +1,6 @@
 package fr.thebrisingers.slotmachinegame.data.machine
 
 import fr.thebrisingers.slotmachinegame.data.*
-import fr.thebrisingers.slotmachinegame.data.machine.SpinResult.Companion.mapEarning
 import fr.thebrisingers.slotmachinegame.data.spell.Symbol
 
 
@@ -11,7 +10,11 @@ data class SpinResult(
     val thirdWheel: List<Symbol>,
 ) {
 
-
+    fun getFirstRowIncome() = calculateIncome(firstWheel[0], secondWheel[0], thirdWheel[0])
+    fun getSecondRowIncome() = calculateIncome(firstWheel[1], secondWheel[1], thirdWheel[1])
+    fun getThirdRowIncome() = calculateIncome(firstWheel[2], secondWheel[2], thirdWheel[2])
+    fun getFirstDiagonalIncome() = calculateIncome(firstWheel[0], secondWheel[1], thirdWheel[2])
+    fun getSecondDiagonalIncome() = calculateIncome(firstWheel[2], secondWheel[1], thirdWheel[0])
 
     private fun calculateIncome(first: Symbol, second: Symbol, third: Symbol): Pair<Symbol, Int>? {
         val resolved = listOf(first, second, third).firstOrNull { it != Symbol.JOKER }

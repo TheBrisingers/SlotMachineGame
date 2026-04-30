@@ -31,3 +31,5 @@ val WHEEL_SYMBOL_PROPORTION = mapOf(
     Symbol.JOKER to 1,
     Symbol.HEAL to 2
 )
+
+fun Map<Symbol, Int>.toRandomWheelValue() = this.map { (symbol, nbSymbol) -> List(nbSymbol) { symbol } }.shuffled()
