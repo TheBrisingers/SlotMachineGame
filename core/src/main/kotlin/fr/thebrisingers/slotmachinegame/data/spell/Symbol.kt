@@ -4,7 +4,7 @@ enum class Symbol {
     FIRE,
     WATER,
     EARTH,
-    AIR,
+    WIND,
     SIMPLE_COIN,
     MULTIPLE_COIN,
     COIN_BAG,
