@@ -1,4 +1,4 @@
-package fr.thebrisingers.slotmachinegame.data
+package fr.thebrisingers.slotmachinegame.data.spell
 
 enum class Target {
     FRONT,

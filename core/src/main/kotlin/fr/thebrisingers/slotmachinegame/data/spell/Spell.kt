@@ -1,4 +1,4 @@
-package fr.thebrisingers.slotmachinegame.data
+package fr.thebrisingers.slotmachinegame.data.spell
 
 data class Spell(
     val cost: SpellCost,
