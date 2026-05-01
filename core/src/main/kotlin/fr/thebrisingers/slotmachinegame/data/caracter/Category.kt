@@ -1,6 +1,6 @@
 package fr.thebrisingers.slotmachinegame.data.caracter
 
-enum class Category(val attackSpeed: Int, val health: Int, val damage: Int) {
+enum class Category(val attackSpeed: Int, val health: Int, val attackDamage: Int) {
     ARCHER(5, 25, 10),
     ASSASSIN(4, 20, 7),
     SOLDIER(6,30,13),
