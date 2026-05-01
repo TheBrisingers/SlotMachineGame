@@ -33,44 +33,54 @@ val WHEEL_SYMBOL_PROPORTION = mapOf(
     Symbol.HEAL to 2
 )
 
-fun Map<Symbol, Int>.toRandomWheelValue(): List<Symbol> = this.flatMap { (symbol, nbSymbol) -> List(nbSymbol) { symbol } }.shuffled()
+fun Map<Symbol, Int>.toRandomWheelValue(): List<Symbol> =
+    this.flatMap { (symbol, nbSymbol) -> List(nbSymbol) { symbol } }.shuffled()
 
+// écran roulette 240 160
+// combat 240 160
+// spellbar 480 110
 
 // Monde total
-const val WORLD_W = 1280f
-const val WORLD_H = 720f          // format 16:9 classique
+const val WORLD_W = 480f
+const val WORLD_H = 270f          // format 16:9 classique
 
 // Zone de combat — moitié gauche
 const val COMBAT_X = 0f
-const val COMBAT_W = 640f         // exactement la moitié
-const val SPELLS_H = 150f         // hauteur de la bande sorts
+const val COMBAT_W = WORLD_W / 2         // exactement la moitié
+const val SPELLS_H = 110f         // hauteur de la bande sorts
 const val COMBAT_Y = SPELLS_H
-const val COMBAT_H = WORLD_H - SPELLS_H   // 570f
+const val COMBAT_H = WORLD_H - SPELLS_H
 
 // Panneau droit
-const val PANEL_X  = COMBAT_W     // 640f
-const val PANEL_Y  = SPELLS_H     // 150f
-const val PANEL_W  = WORLD_W - COMBAT_W   // 640f
-const val PANEL_H  = WORLD_H - SPELLS_H  // 570f
+const val PANEL_X = COMBAT_W     // 640f
+const val PANEL_Y = SPELLS_H     // 150f
+const val PANEL_W = WORLD_W - COMBAT_W   // 640f
+const val PANEL_H = WORLD_H - SPELLS_H  // 570f
 
 // Bande sorts
 const val SPELLS_X = 0f
 const val SPELLS_Y = 0f
 const val SPELLS_W = WORLD_W      // 1280f — pleine largeur
 
+const val FLOOR_Y = 32f
+const val PADDING_BATTLES = 12f
+
 // Mage
-const val MAGE_W    = 60f
-const val MAGE_H    = 80f
-const val MAGE_X    = COMBAT_X + COMBAT_W - 120f  // collé à droite de la zone combat
-const val MAGE_Y    = COMBAT_Y + 60f
+const val MAGE_W = 32f
+const val MAGE_H = 32f
+const val MAGE_X = COMBAT_X + COMBAT_W - PADDING_BATTLES - MAGE_W
+const val MAGE_Y = COMBAT_Y + FLOOR_Y
 
 // Ennemis — espacés dans la zone combat
-const val ENEMY_W   = 55f
-const val ENEMY_H   = 70f
-const val ENEMY_START_X = COMBAT_X + 60f   // premier ennemi
-const val ENEMY_GAP = 120f                  // espace entre chaque ennemi
+const val ENEMY_W = 32f
+const val ENEMY_H = 32f
+const val ENEMY_START_X = COMBAT_X + PADDING_BATTLES   // premier ennemi
+const val ENEMY_Y = COMBAT_Y + FLOOR_Y
+
+val ENEMY_Y_OFFSET = listOf(0f, ENEMY_H / 3, 2 * ENEMY_H / 3)
+const val ENEMY_GAP = 12f                  // espace entre chaque ennemi
 
 // Boutons de sorts
-const val SPELL_BTN_H   = 110f             // hauteur bouton dans la bande de 150
-const val SPELL_BTN_Y   = 20f             // marge depuis le bas
+const val SPELL_BTN_H = 110f             // hauteur bouton dans la bande de 150
+const val SPELL_BTN_Y = 20f             // marge depuis le bas
 const val SPELL_BTN_GAP = 20f             // espace entre boutons

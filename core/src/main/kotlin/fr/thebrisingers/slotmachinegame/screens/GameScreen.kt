@@ -3,25 +3,29 @@ package fr.thebrisingers.slotmachinegame.screens
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.InputAdapter
+import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.ScreenUtils
 import com.badlogic.gdx.utils.viewport.ScreenViewport
+import fr.thebrisingers.slotmachinegame.FocusManager
+import fr.thebrisingers.slotmachinegame.FocusTarget
 import fr.thebrisingers.slotmachinegame.battle.BattleState
-import fr.thebrisingers.slotmachinegame.battle.BattleUI
-import fr.thebrisingers.slotmachinegame.data.spell.spellCollection
 import fr.thebrisingers.slotmachinegame.machine.MachineState
 import fr.thebrisingers.slotmachinegame.machine.MachineUI
+import fr.thebrisingers.slotmachinegame.spellBar.SpellBarState
 import ktx.app.KtxScreen
 import ktx.assets.disposeSafely
 
 class GameScreen : KtxScreen, InputAdapter() {
     private lateinit var machineState: MachineState
     private lateinit var battleState: BattleState
+    private lateinit var spellBarState: SpellBarState
 
     private lateinit var gameRenderer: GameRenderer
 
     private lateinit var machineUI: MachineUI
-    private lateinit var battleUI: BattleUI // les 3 boutons de sorts + bouton skip
+
+    private lateinit var focusManager: FocusManager
 
     private lateinit var stage: Stage
 
@@ -30,22 +34,20 @@ class GameScreen : KtxScreen, InputAdapter() {
 
         battleState = BattleState()
         machineState = MachineState()
+        spellBarState = SpellBarState()
+        focusManager = FocusManager({ spellBarState.spells })
 
         gameRenderer = GameRenderer(stage, machineState, battleState)
 
-        battleUI = BattleUI(
-            stage = stage,
-            spells = spellCollection.subList(0, 3),
-            onCast = { spell -> battleState.castSpell(spell) },
-            onSpinWheel = { },
-            world = battleState
-        )
         machineUI = MachineUI(
             stage = stage,
             onSpin = { machineState.spin() }
         )
 
-        Gdx.input.inputProcessor = stage
+        val multiplexer = InputMultiplexer()
+        multiplexer.addProcessor(stage)
+        multiplexer.addProcessor(this)
+        Gdx.input.inputProcessor = multiplexer
     }
 
     override fun render(delta: Float) {
@@ -88,10 +90,25 @@ class GameScreen : KtxScreen, InputAdapter() {
         get() = Gdx.input.isKeyPressed(Keys.SPACE)
 
     private fun changeFocus() {
-
+        focusManager.next()
     }
 
     private fun applyAction() {
-
+        when (val target = focusManager.current) {
+            is FocusTarget.Spin -> {
+                // TODO lancer l'animation de spin
+                battleState.advanceMonsterTurn()
+                machineState.spin()
+            }
+            is FocusTarget.Spell -> {
+                val spell = spellBarState.spells[target.index]
+                // TODO check si possible de lancer le sort
+                if (true) {
+                    battleState.castSpell(spell)
+                } else {
+                    // TODO faire une animation pour dire que pas lancable
+                }
+            }
+        }
     }
 }

@@ -8,7 +8,7 @@ import fr.thebrisingers.slotmachinegame.data.*
 import ktx.assets.disposeSafely
 
 class BattleRenderer(
-    private val world: BattleState,
+    private val battleState: BattleState,
     private val batch: SpriteBatch,
     private val shapeRenderer: ShapeRenderer,
 ) {
@@ -17,12 +17,13 @@ class BattleRenderer(
     var isAnimationDone = true
         private set
 
+    // MAYBE
+    //private var monsterOffsetList = ENEMY_Y_OFFSET.shuffled()
 
     fun render() {
         isAnimationDone = false
 
         drawCombatZone()
-        drawSpellsZone()
         isAnimationDone = true
     }
 
@@ -40,49 +41,37 @@ class BattleRenderer(
         shapeRenderer.end()
 
         // Mage (à droite dans sa zone)
-        val mageX = COMBAT_X + COMBAT_W - 80f
-        val mageY = COMBAT_Y + 40f
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
         shapeRenderer.color = Color.CYAN
-        shapeRenderer.rect(mageX, mageY, 44f, 56f)
+        shapeRenderer.rect(MAGE_X, MAGE_Y, MAGE_W, MAGE_H)
+
 
         // Ennemis (alignés à gauche dans la zone)
-        world.monsters.forEachIndexed { i, monster ->
-            if (!monster.isAlive) return@forEachIndexed
-            val ex = COMBAT_X + 40f + i * 90f
-            val ey = COMBAT_Y + 40f
+        battleState.monsters.forEachIndexed { i, monster ->
             shapeRenderer.color = Color.WHITE
-            shapeRenderer.rect(ex, ey, 40f, 52f)
+            shapeRenderer.rect(
+                ENEMY_START_X + i * (ENEMY_W + ENEMY_GAP),
+                ENEMY_Y /*+ monsterOffsetList[i]*/,
+                ENEMY_W,
+                ENEMY_H
+            )
         }
         shapeRenderer.end()
+
+        batch.begin()
+        // HP mage
+        font.draw(batch, "HP: ${battleState.hero.health}", MAGE_X, MAGE_Y + MAGE_H)
 
         // HP bars ennemis
-        batch.begin()
-        world.monsters.forEachIndexed { i, enemy ->
-            val ex = COMBAT_X + 40f + i * 90f
-            val ey = COMBAT_Y + 40f + 58f
-            font.draw(batch, "${enemy.health}/${enemy.maxHealth}", ex, ey)
+        battleState.monsters.forEachIndexed { i, monster ->
+            font.draw(
+                batch,
+                "${monster.health}/${monster.maxHealth}",
+                ENEMY_START_X + i * (ENEMY_W + ENEMY_GAP),
+                ENEMY_Y + ENEMY_H, /*+ monsterOffsetList[i]*/
+            )
         }
-        // HP mage
-        font.draw(batch, "HP: ${world.hero.health}", mageX - 10f, mageY + 70f)
         batch.end()
-    }
-
-
-    private fun drawSpellsZone() {
-        // Fond bande du bas
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.color = Color(0.06f, 0.06f, 0.12f, 1f)
-        shapeRenderer.rect(SPELLS_X, SPELLS_Y, SPELLS_W, SPELLS_H)
-        shapeRenderer.end()
-
-        // Séparateur horizontal
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
-        shapeRenderer.color = Color.DARK_GRAY
-        shapeRenderer.line(0f, SPELLS_H, WORLD_W, SPELLS_H)
-        shapeRenderer.end()
-
-        // Les sorts sont gérés par le Stage (UI) — voir BattleUI
     }
 
     fun dispose() {

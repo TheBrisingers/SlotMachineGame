@@ -27,9 +27,9 @@ class BattleState {
         spell.spellEffect.forEach { effect ->
             val aliveMonsters = monsters.filter { it.isAlive }
             val target: List<Entity> = when (effect.target) {
-                Target.FRONT -> monsters.subList(0, 1)
-                Target.BACK -> monsters.subList(monsters.size - 1, monsters.size)
-                Target.ALL -> monsters
+                Target.FRONT -> aliveMonsters.subList(0, 1)
+                Target.BACK -> aliveMonsters.subList(aliveMonsters.size - 1, aliveMonsters.size)
+                Target.ALL -> aliveMonsters
                 Target.SELF -> listOf(hero)
             }
 
