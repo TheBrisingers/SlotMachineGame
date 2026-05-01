@@ -12,6 +12,7 @@ import fr.thebrisingers.slotmachinegame.data.gameStatus.BattleEvent
 import fr.thebrisingers.slotmachinegame.data.gameStatus.TurnPhase
 import fr.thebrisingers.slotmachinegame.data.machine.SymbolRect
 import fr.thebrisingers.slotmachinegame.data.spell.Spell
+import fr.thebrisingers.slotmachinegame.data.spell.SpellCost
 import fr.thebrisingers.slotmachinegame.data.spell.Symbol
 import fr.thebrisingers.slotmachinegame.data.spell.Target
 import kotlin.collections.plusAssign
@@ -47,6 +48,24 @@ class InventoryState {
             income.let { (symbol, gain) ->
                 counters.find { it.title == symbol.name }?.let {
                     it.value += gain
+                }
+            }
+        }
+    }
+
+    fun canCastSpell(spellCost: SpellCost): Boolean {
+        // .all vérifie que pour chaque symbole, on a assez de ressources
+        return spellCost.spellCostMap.all { (symbol, requiredAmount) ->
+            val currentAmount = counters.find { it.title == symbol.name }?.value ?: 0
+            currentAmount >= requiredAmount
+        }
+    }
+
+    fun consumeResources(spellCost: SpellCost) {
+        spellCost.spellCostMap.forEach { (symbol, amount) ->
+            if (amount > 0) {
+                counters.find { it.title == symbol.name }?.let {
+                    it.value -= amount
                 }
             }
         }
