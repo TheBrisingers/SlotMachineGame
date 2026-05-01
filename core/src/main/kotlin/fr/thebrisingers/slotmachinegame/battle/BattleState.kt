@@ -1,16 +1,12 @@
 package fr.thebrisingers.slotmachinegame.battle
 
-import fr.thebrisingers.slotmachinegame.data.caracter.Category
-import fr.thebrisingers.slotmachinegame.data.caracter.Entity
-import fr.thebrisingers.slotmachinegame.data.caracter.Faction
-import fr.thebrisingers.slotmachinegame.data.caracter.Hero
-import fr.thebrisingers.slotmachinegame.data.caracter.Monster
+import fr.thebrisingers.slotmachinegame.data.caracter.*
 import fr.thebrisingers.slotmachinegame.data.gameStatus.BattleEvent
 import fr.thebrisingers.slotmachinegame.data.gameStatus.TurnPhase
 import fr.thebrisingers.slotmachinegame.data.spell.Spell
 import fr.thebrisingers.slotmachinegame.data.spell.Target
 
-class BattleWorld {
+class BattleState {
 
     val hero = Hero()
 

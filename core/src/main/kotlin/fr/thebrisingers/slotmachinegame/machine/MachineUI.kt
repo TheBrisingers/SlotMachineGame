@@ -3,16 +3,18 @@ package fr.thebrisingers.slotmachinegame.machine
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.TextureRegion
-import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
-import com.badlogic.gdx.utils.viewport.ScreenViewport
+import fr.thebrisingers.slotmachinegame.data.COMBAT_W
+import fr.thebrisingers.slotmachinegame.data.SPELLS_H
+import ktx.actors.onClick
 import ktx.assets.disposeSafely
 
-class MachineUI(val onSpin: () -> Unit) {
-    val stage = Stage(ScreenViewport())
+class MachineUI(
+    val stage: Stage,
+    val onSpin: () -> Unit
+) {
     private var textureNormal = Texture(Gdx.files.internal("logo.png"))
 
     init {
@@ -21,14 +23,10 @@ class MachineUI(val onSpin: () -> Unit) {
             up = drawableNormal
         }).apply {
             setSize(250f, 50f)
-            setPosition(200f, 20f)
+            setPosition( COMBAT_W, 20f + SPELLS_H)
         }
 
-        imageButton.addListener(object : ClickListener() {
-            override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                onSpin() // On prévient le contrôleur qu'on a cliqué
-            }
-        })
+        imageButton.onClick { onSpin() }
 
         stage.addActor(imageButton)
         Gdx.input.inputProcessor = stage

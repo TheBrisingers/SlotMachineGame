@@ -1,11 +1,19 @@
 package fr.thebrisingers.slotmachinegame.machine
 
 import com.badlogic.gdx.math.Rectangle
+import fr.thebrisingers.slotmachinegame.data.WHEEL_SYMBOL_PROPORTION
 import fr.thebrisingers.slotmachinegame.data.machine.Machine
 import fr.thebrisingers.slotmachinegame.data.machine.SymbolRect
 import fr.thebrisingers.slotmachinegame.data.spell.Symbol
+import fr.thebrisingers.slotmachinegame.data.toRandomWheelValue
 
-class MachineState(val machine: Machine) {
+class MachineState {
+
+    private val machine = Machine(
+        WHEEL_SYMBOL_PROPORTION.toRandomWheelValue(),
+        WHEEL_SYMBOL_PROPORTION.toRandomWheelValue(),
+        WHEEL_SYMBOL_PROPORTION.toRandomWheelValue()
+    )
     val counters = listOf(
         SymbolRect(Symbol.FIRE.name, Rectangle(50f, 100f, 100f, 60f)),
         SymbolRect(Symbol.WATER.name, Rectangle(200f, 100f, 100f, 60f)),
