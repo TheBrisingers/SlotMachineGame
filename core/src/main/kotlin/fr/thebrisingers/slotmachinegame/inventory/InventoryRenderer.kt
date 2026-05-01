@@ -31,11 +31,6 @@ class InventoryRenderer(
     }
 
     private fun drawInventoryZone() {
-        // Fond de la zone
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.rect(INVENTORY_X, INVENTORY_Y, INVENTORY_W, INVENTORY_H)
-        shapeRenderer.end()
-
         batch.begin()
         inventoryState.counters.forEach { counter ->
             val texture = textures[counter.title]

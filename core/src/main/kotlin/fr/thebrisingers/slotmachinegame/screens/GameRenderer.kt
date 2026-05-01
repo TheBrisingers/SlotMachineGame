@@ -43,7 +43,7 @@ class GameRenderer(
 
         camera.update()
         machineRenderer.render()
-        battleRenderer.render()
+        battleRenderer.render(delta)
         inventoryRenderer.render()
         stage.act(delta)
         stage.draw()
