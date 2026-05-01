@@ -10,6 +10,8 @@ import fr.thebrisingers.slotmachinegame.battle.BattleRenderer
 import fr.thebrisingers.slotmachinegame.battle.BattleState
 import fr.thebrisingers.slotmachinegame.data.WORLD_H
 import fr.thebrisingers.slotmachinegame.data.WORLD_W
+import fr.thebrisingers.slotmachinegame.inventory.InventoryRenderer
+import fr.thebrisingers.slotmachinegame.inventory.InventoryState
 import fr.thebrisingers.slotmachinegame.machine.MachineRenderer
 import fr.thebrisingers.slotmachinegame.machine.MachineState
 import ktx.assets.disposeSafely
@@ -17,7 +19,8 @@ import ktx.assets.disposeSafely
 class GameRenderer(
     private val stage: Stage,
     machineState: MachineState,
-    battleState: BattleState
+    battleState: BattleState,
+    inventoryState: InventoryState
 ) {
     private val camera = OrthographicCamera()
     private val viewport = FitViewport(WORLD_W, WORLD_H, camera)
@@ -27,7 +30,7 @@ class GameRenderer(
 
     val machineRenderer = MachineRenderer(machineState, batch, shapeRenderer)
     val battleRenderer = BattleRenderer(battleState, batch, shapeRenderer)
-
+    val inventoryRenderer = InventoryRenderer(inventoryState, batch, shapeRenderer)
 
     init {
         // Force une première mise à jour avec la taille réelle de la fenêtre
@@ -41,6 +44,7 @@ class GameRenderer(
         camera.update()
         machineRenderer.render()
         battleRenderer.render()
+        inventoryRenderer.render()
         stage.act(delta)
         stage.draw()
     }
@@ -50,6 +54,7 @@ class GameRenderer(
         shapeRenderer.disposeSafely()
         machineRenderer.dispose()
         battleRenderer.dispose()
+        inventoryRenderer.dispose()
     }
 
     fun resize(width: Int, height: Int) = viewport.update(width, height, true)

@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport
 import fr.thebrisingers.slotmachinegame.FocusManager
 import fr.thebrisingers.slotmachinegame.FocusTarget
 import fr.thebrisingers.slotmachinegame.battle.BattleState
+import fr.thebrisingers.slotmachinegame.inventory.InventoryState
 import fr.thebrisingers.slotmachinegame.machine.MachineState
 import fr.thebrisingers.slotmachinegame.machine.MachineUI
 import fr.thebrisingers.slotmachinegame.spellBar.SpellBarState
@@ -20,6 +21,7 @@ class GameScreen : KtxScreen, InputAdapter() {
     private lateinit var machineState: MachineState
     private lateinit var battleState: BattleState
     private lateinit var spellBarState: SpellBarState
+    private lateinit var inventoryState: InventoryState
 
     private lateinit var gameRenderer: GameRenderer
 
@@ -33,11 +35,12 @@ class GameScreen : KtxScreen, InputAdapter() {
         stage = Stage(ScreenViewport())
 
         battleState = BattleState()
-        machineState = MachineState()
+        inventoryState = InventoryState()
+        machineState = MachineState({ inventoryState.updateCounters(it) })
         spellBarState = SpellBarState()
         focusManager = FocusManager({ spellBarState.spells })
 
-        gameRenderer = GameRenderer(stage, machineState, battleState)
+        gameRenderer = GameRenderer(stage, machineState, battleState, inventoryState)
 
         machineUI = MachineUI(
             stage = stage,

@@ -18,19 +18,7 @@ class MachineRenderer(
     fun render() {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
         shapeRenderer.color = Color.SKY
-        machineState.counters.forEach { count ->
-            shapeRenderer.rect(count.zone.x + COMBAT_W, count.zone.y + SPELLS_H, count.zone.width, count.zone.height)
-        }
         shapeRenderer.end()
-
-        batch.begin()
-        for (c in machineState.counters) {
-            font.color = Color.YELLOW
-            font.draw(batch, c.title, c.zone.x + COMBAT_W, c.zone.y + c.zone.height + 20f + SPELLS_H)
-            font.color = Color.WHITE
-            font.draw(batch, c.value.toString(), c.zone.x + 45f + COMBAT_W, c.zone.y + 35f + SPELLS_H)
-        }
-        batch.end()
     }
 
     fun dispose() {

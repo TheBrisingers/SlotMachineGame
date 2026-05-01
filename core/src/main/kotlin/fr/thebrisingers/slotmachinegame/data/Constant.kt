@@ -47,7 +47,7 @@ const val WORLD_H = 270f          // format 16:9 classique
 // Zone de combat — moitié gauche
 const val COMBAT_X = 0f
 const val COMBAT_W = WORLD_W / 2         // exactement la moitié
-const val SPELLS_H = 110f         // hauteur de la bande sorts
+const val SPELLS_H = 90f         // hauteur de la bande sorts
 const val COMBAT_Y = SPELLS_H
 const val COMBAT_H = WORLD_H - SPELLS_H
 
@@ -56,6 +56,13 @@ const val PANEL_X = COMBAT_W     // 640f
 const val PANEL_Y = SPELLS_H     // 150f
 const val PANEL_W = WORLD_W - COMBAT_W   // 640f
 const val PANEL_H = WORLD_H - SPELLS_H  // 570f
+
+// Inventory
+const val INVENTORY_W = 64f
+const val INVENTORY_H = COMBAT_H
+const val INVENTORY_X = PANEL_X - INVENTORY_W / 2
+const val INVENTORY_Y = COMBAT_Y
+
 
 // Bande sorts
 const val SPELLS_X = 0f

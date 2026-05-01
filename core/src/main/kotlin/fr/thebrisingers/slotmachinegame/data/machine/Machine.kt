@@ -27,7 +27,7 @@ class Machine(
         }
     }
 
-    fun getIncomes(): List<Pair<Symbol, Int>?> {
+    fun getIncomes(): List<Pair<Symbol, Int>> {
         val incomes = listOf(
             spinResult.getFirstRowIncome(),
             spinResult.getSecondRowIncome(),
@@ -35,7 +35,7 @@ class Machine(
             spinResult.getFirstDiagonalIncome(),
             spinResult.getSecondDiagonalIncome()
         )
-        return incomes
+        return incomes.filterNotNull()
     }
 
     fun updateSpinResult(wheelOne: List<Symbol>, wheelTwo: List<Symbol>, wheelThree: List<Symbol>){
