@@ -43,5 +43,11 @@ data class SpinResult(
             Symbol.HEAL to HEAL_SYMBOL_EARNING,
         )
     }
+
+    override fun toString(): String {
+        return "${firstWheel[0]} | ${secondWheel[0]} | ${thirdWheel[0]}\n" +
+            "${firstWheel[1]} | ${secondWheel[1]} | ${thirdWheel[1]}\n" +
+            "${firstWheel[2]} | ${secondWheel[2]} | ${thirdWheel[2]}"
+    }
 }
 
