@@ -5,6 +5,7 @@ import fr.thebrisingers.slotmachinegame.data.spell.Symbol
 import kotlin.math.round
 
 const val SLOT_PRICE = 5
+const val INITIAL_COINS = 30
 const val HERO_HEALTH = 50
 
 val FIRE_SYMBOL_EARNING = Earning(1, 3)
@@ -32,4 +33,4 @@ val WHEEL_SYMBOL_PROPORTION = mapOf(
     Symbol.HEAL to 2
 )
 
-fun Map<Symbol, Int>.toRandomWheelValue() = this.map { (symbol, nbSymbol) -> List(nbSymbol) { symbol } }.shuffled()
+fun Map<Symbol, Int>.toRandomWheelValue(): List<Symbol> = this.flatMap { (symbol, nbSymbol) -> List(nbSymbol) { symbol } }.shuffled()
