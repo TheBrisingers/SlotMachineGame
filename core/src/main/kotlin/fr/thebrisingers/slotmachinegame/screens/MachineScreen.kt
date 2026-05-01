@@ -22,7 +22,8 @@ class MachineScreen : KtxScreen {
     })
 
     override fun render(delta: Float) {
-        renderer.render(state.counters)
+        state.update(delta)
+        renderer.render(state.counters, state.stateTime, state.isSpinning)
         ui.draw(delta)
     }
 
