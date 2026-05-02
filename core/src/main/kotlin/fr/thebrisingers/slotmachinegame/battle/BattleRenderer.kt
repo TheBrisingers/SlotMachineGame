@@ -1,8 +1,6 @@
 package fr.thebrisingers.slotmachinegame.battle
 
-import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Animation
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
@@ -27,6 +25,9 @@ class BattleRenderer(
     // Mapping pour associer une Faction à son set d'animations
     private val monsterAnimations = mutableMapOf<Faction, Animation<TextureRegion>>()
     private val monsterStateTimes = FloatArray(3)
+    private val monsterHitStateTimes = FloatArray(3)
+    private val monsterDeathStateTimes = FloatArray(3)
+    private val monsterIsDying = BooleanArray(3)
 
     private val font = BitmapFont()
 
@@ -47,8 +48,11 @@ class BattleRenderer(
         monsterAnimations[Faction.GOBLIN] = InitOrc.idleAnimation
 
         // Optionnel : décaler le temps de départ des monstres pour qu'ils ne bougent pas tous en même temps
-        for (i in monsterStateTimes.indices) {
+        for (i in monsterHitStateTimes.indices) {
             monsterStateTimes[i] = (0..100).random() / 100f
+            monsterHitStateTimes[i] = 99f   // Initialisé à "fini"
+            monsterDeathStateTimes[i] = 99f // Initialisé à "fini"
+            monsterIsDying[i] = false
         }
     }
 
@@ -58,8 +62,13 @@ class BattleRenderer(
         stateTime = 0f // On recommence le chrono à zéro pour la nouvelle anim
     }
 
-    fun triggerCast() {
+    fun triggerCast(targetIndices: List<Int>) {
         playAnimation(InitHero.attackAnimation)
+        targetIndices.forEach { i ->
+            if (i in monsterHitStateTimes.indices) {
+                monsterHitStateTimes[i] = 0f
+            }
+        }
     }
 
     fun render(delta: Float) {
@@ -70,6 +79,8 @@ class BattleRenderer(
         stateTime += delta
         for (i in monsterStateTimes.indices) {
             monsterStateTimes[i] += delta
+            monsterHitStateTimes[i] += delta
+            monsterDeathStateTimes[i] += delta
         }
 
         // Logique de retour à l'IDLE pour le héros
@@ -90,24 +101,56 @@ class BattleRenderer(
     private fun drawMonsterAnimations() {
         batch.begin()
         battleState.monsters.forEachIndexed { i, monster ->
-            if (monster.isAlive) {
-                // On récupère l'animation correspondant à la faction du monstre
-                val anim = monsterAnimations[monster.faction]
-                val time = monsterStateTimes[i]
+            val hitAnim = getHitAnim(monster.faction)
+            val deathAnim = getDeathAnim(monster.faction)
+
+            // Détection du début de la mort
+            if (!monster.isAlive && !monsterIsDying[i] && monsterDeathStateTimes[i] > 1f) {
+                monsterIsDying[i] = true
+                monsterDeathStateTimes[i] = 0f
+            }
+
+            // Déterminer quelle animation afficher
+            val isHit = monsterHitStateTimes[i] < hitAnim.animationDuration
+            val isDying = monsterIsDying[i] && !deathAnim.isAnimationFinished(monsterDeathStateTimes[i])
+
+            if (monster.isAlive || isDying || isHit) {
+                val anim = when {
+                    isDying -> deathAnim
+                    isHit -> hitAnim
+                    else -> monsterAnimations[monster.faction]
+                }
+
+                val time = when {
+                    isDying -> monsterDeathStateTimes[i]
+                    isHit -> monsterHitStateTimes[i]
+                    else -> monsterStateTimes[i]
+                }
 
                 if (anim != null) {
                     val currentFrame = anim.getKeyFrame(time)
                     val x = ENEMY_START_X + i * (ENEMY_W + ENEMY_GAP)
 
-                    batch.draw(
-                        currentFrame,
-                        x, ENEMY_Y,
-                        ENEMY_W, ENEMY_H
-                    )
+                    // Optionnel : Petit flash rouge quand on prend un coup
+                    if (isHit) batch.setColor(1f, 0.6f, 0.6f, 1f)
+
+                    batch.draw(currentFrame, x, ENEMY_Y, ENEMY_W, ENEMY_H)
+                    batch.setColor(Color.WHITE)
                 }
             }
         }
         batch.end()
+    }
+    private fun getHitAnim(faction: Faction) = when(faction) {
+        Faction.SKELETON -> InitSkeleton.getHitAnimation
+        Faction.ZOMBIE -> InitRogue.getHitAnimation
+        Faction.GOBLIN -> InitOrc.getHitAnimation
+    }
+
+    private fun getDeathAnim(faction: Faction) = when(faction) {
+        Faction.SKELETON -> InitSkeleton.deathAnimation
+        Faction.ZOMBIE -> InitRogue.deathAnimation
+        Faction.GOBLIN -> InitOrc.deathAnimation
     }
 
     private fun drawHeroAnimation() {

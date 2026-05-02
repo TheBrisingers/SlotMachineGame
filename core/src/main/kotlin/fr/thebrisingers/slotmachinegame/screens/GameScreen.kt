@@ -9,6 +9,7 @@ import com.badlogic.gdx.utils.ScreenUtils
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 import fr.thebrisingers.slotmachinegame.FocusManager
 import fr.thebrisingers.slotmachinegame.FocusTarget
+import fr.thebrisingers.slotmachinegame.data.spell.Target
 import fr.thebrisingers.slotmachinegame.battle.BattleState
 import fr.thebrisingers.slotmachinegame.inventory.InventoryState
 import fr.thebrisingers.slotmachinegame.machine.MachineState
@@ -104,6 +105,22 @@ class GameScreen : KtxScreen, InputAdapter() {
             }
             is FocusTarget.Spell -> {
                 val spell = spellBarState.spells[target.index]
+
+                val aliveIndices = battleState.monsters.mapIndexedNotNull { index, m ->
+                    if (m.isAlive) index else null
+                }
+
+                // --- CALCUL DES INDICES TOUCHÉS ---
+                val hitIndices = mutableSetOf<Int>()
+                spell.spellEffect.forEach { effect ->
+                    when (effect.target) {
+                        Target.FRONT -> if (aliveIndices.isNotEmpty()) hitIndices.add(aliveIndices.first())
+                        Target.BACK -> if (aliveIndices.isNotEmpty()) hitIndices.add(aliveIndices.last())
+                        Target.ALL -> hitIndices.addAll(aliveIndices)
+                        Target.SELF -> { /* On ignore le héros pour l'anim de hit des monstres */ }
+                    }
+                }
+
                 // Vérification des ressources
                 if (inventoryState.canCastSpell(spell.cost)) {
                     // 1. Consommation
@@ -113,7 +130,7 @@ class GameScreen : KtxScreen, InputAdapter() {
                     battleState.castSpell(spell)
 
                     // 3. Animation du héros
-                   gameRenderer.battleRenderer.triggerCast()
+                   gameRenderer.battleRenderer.triggerCast(hitIndices.toList())
 
                     // 4. Tour des monstres
                     battleState.advanceMonsterTurn()
