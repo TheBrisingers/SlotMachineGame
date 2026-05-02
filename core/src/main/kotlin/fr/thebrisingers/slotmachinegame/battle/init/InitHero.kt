@@ -22,7 +22,7 @@ object InitHero {
     }
     val attackAnimation: Animation<TextureRegion> = run {
         val attackFrames = TextureRegion.split(playerAttackSheet, 24, 24)[0]
-        Animation(0.08f, *attackFrames)
+        Animation(0.15f, *attackFrames)
     }.apply {
         playMode = Animation.PlayMode.NORMAL
     }

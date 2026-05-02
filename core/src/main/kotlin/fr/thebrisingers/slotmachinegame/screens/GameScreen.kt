@@ -113,7 +113,7 @@ class GameScreen : KtxScreen, InputAdapter() {
                     battleState.castSpell(spell)
 
                     // 3. Animation du héros
-//                    gameRenderer.battleRenderer.triggerCast()
+                   gameRenderer.battleRenderer.triggerCast()
 
                     // 4. Tour des monstres
                     battleState.advanceMonsterTurn()

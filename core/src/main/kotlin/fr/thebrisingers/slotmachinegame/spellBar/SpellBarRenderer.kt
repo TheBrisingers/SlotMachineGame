@@ -109,7 +109,7 @@ class SpellBarRenderer(
                     shapeRenderer.color = Color(1f, 0.84f, 0f, 1f)
 
                     // On dessine un rectangle aux bords arrondis (si possible) ou simple
-                    // Gdx.gl.glLineWidth(2f) // Optionnel : épaissir un peu
+                    Gdx.gl.glLineWidth(2f) // Optionnel : épaissir un peu
                     shapeRenderer.rect(cardX - 1f, cardY - 1f, cardWidth + 2f, cardHeight + 2f)
                     shapeRenderer.end()
 

@@ -50,7 +50,7 @@ class InventoryRenderer(
             if (texture != null) {
                 // Si la ressource manque, on teinte le sprite et le texte
                 if (isMissing && errorFlashTimer > 0f) {
-                    batch.color = Color(1f, 0.3f, 0.3f, 1f) // Rouge doux / Rose
+                    batch.color = Color(1f, 0.3f, 0.3f, 1f)
                     font.color = Color(1f, 0.5f, 0.5f, 1f)
                 } else {
                     batch.color = Color.WHITE
@@ -66,7 +66,9 @@ class InventoryRenderer(
                 font.draw(batch, counter.value.toString(), counter.zone.x + counter.zone.width - 10f, counter.zone.y + 5f)
             }
         }
-                batch.end()
+        batch.color = Color.WHITE
+        font.color = Color.WHITE
+        batch.end()
     }
 
     fun dispose() {

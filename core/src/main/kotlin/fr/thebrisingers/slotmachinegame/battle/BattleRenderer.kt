@@ -58,7 +58,15 @@ class BattleRenderer(
         stateTime = 0f // On recommence le chrono à zéro pour la nouvelle anim
     }
 
+    fun triggerCast() {
+        playAnimation(InitHero.attackAnimation)
+    }
+
     fun render(delta: Float) {
+        // On force le retour au blanc pour éviter les fuites de couleur de l'inventaire
+        batch.color = Color.WHITE
+        font.color = Color.WHITE
+
         stateTime += delta
         for (i in monsterStateTimes.indices) {
             monsterStateTimes[i] += delta
