@@ -38,7 +38,7 @@ class BattleRenderer(
     private val monsterAttackStateTimes = FloatArray(3)
     private val monsterIsAttacking = BooleanArray(3)
 
-    private val backgroud = Texture(Gdx.files.internal("combat_background.jpg"))
+    private val backgroud = Texture(Gdx.files.internal("combat_background.png"))
 
     private var lastWaveRendered = 1
 
