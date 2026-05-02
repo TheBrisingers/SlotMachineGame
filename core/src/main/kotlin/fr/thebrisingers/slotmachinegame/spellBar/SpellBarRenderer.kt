@@ -184,16 +184,10 @@ class SpellBarRenderer(
 
     private fun drawDescriptionZone() {
         // Fond bande du bas
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.color = Color.LIGHT_GRAY
-        shapeRenderer.rect(SPELLS_DESCRIPTION_X, SPELLS_Y, SPELLS_DESCRIPTION_W, SPELLS_H)
-        shapeRenderer.end()
+        batch.begin()
 
-        // Séparateur vertical
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
-        shapeRenderer.color = Color.DARK_GRAY
-        shapeRenderer.line(SPELLS_DESCRIPTION_X, SPELLS_Y, SPELLS_DESCRIPTION_X, SPELLS_H)
-        shapeRenderer.end()
+        batch.draw(paperBackground, SPELLS_DESCRIPTION_X, SPELLS_Y, SPELLS_DESCRIPTION_W, SPELLS_H)
+        batch.end()
 
         batch.begin()
         font.color = Color.BLACK
@@ -202,7 +196,7 @@ class SpellBarRenderer(
         font.draw(
             batch,
             spellBarState.title,
-            SPELLS_DESCRIPTION_X + 10f,
+            SPELLS_DESCRIPTION_X + 20f,
             SPELLS_H - 10f
         ) // Adjusted Y for better visibility
         font.data.setScale(0.5f) // Taille plus petite pour la description

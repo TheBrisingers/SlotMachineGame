@@ -34,6 +34,8 @@ class BattleRenderer(
     private val monsterAttackStateTimes = FloatArray(3)
     private val monsterIsAttacking = BooleanArray(3)
 
+    private val backgroud = Texture(Gdx.files.internal("combat_background.jpg"))
+
     private val font = BitmapFont()
 
     var isAnimationDone = true
@@ -201,12 +203,12 @@ class BattleRenderer(
     }
 
     private fun drawCombatZone() {
+
+        batch.begin()
+        batch.draw(backgroud, COMBAT_X, COMBAT_Y, COMBAT_W, COMBAT_H)
+        batch.end()
         // 1. Dessin des formes (Fonds)
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-
-        // Fond de la zone de combat
-        shapeRenderer.color = Color(0.08f, 0.08f, 0.14f, 1f)
-        shapeRenderer.rect(COMBAT_X, COMBAT_Y, COMBAT_W, COMBAT_H)
 
         // 2. Dessin des barres de vie
         val barWidth = 40f

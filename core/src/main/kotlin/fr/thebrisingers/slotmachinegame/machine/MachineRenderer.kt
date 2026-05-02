@@ -27,6 +27,7 @@ class MachineRenderer(
     private val wheelBackground = Texture(Gdx.files.internal("wheel/roue_a_sous.png")) // Nouveau fichier
     private val background = Texture(Gdx.files.internal("wheel/background.png")) // Nouveau fichier
     private val oneSlot = Texture(Gdx.files.internal("wheel/slot machine-sheet.png")) // Nouveau fichier
+    private val waterSlot = Texture(Gdx.files.internal("wheel/water_slot.png")) // Nouveau fichier
     private val threeSlots = Texture(Gdx.files.internal("wheel/3 slot machinet.png")) // Nouveau fichier
 
     private val earthRune = Texture(Gdx.files.internal("runes/earth.png"))
@@ -37,8 +38,8 @@ class MachineRenderer(
     val frameDuration = 0.01f
 
 
-    fun oneSlotAnimation(initialFrame: Int): Animation<TextureRegion> = run {
-        val allFrames = TextureRegion.split(oneSlot, 150, 200)[0]
+    fun slotAnimation(texture: Texture, initialFrame: Int): Animation<TextureRegion> = run {
+        val allFrames = TextureRegion.split(texture, 150, 200)[0]
         // On réordonne le tableau pour commencer à 'initialFrame'
         val rotatedFrames = Array(allFrames.size) { i ->
             allFrames[(i + initialFrame) % allFrames.size]
@@ -50,10 +51,10 @@ class MachineRenderer(
 
     val decalage = 17
 
-    val animation0 = oneSlotAnimation(0)
-    val animation1 = oneSlotAnimation(decalage * 1)
-    val animation2 = oneSlotAnimation(decalage * 2)
-    val animation3 = oneSlotAnimation(decalage * 3)
+    val animationSlot0 = slotAnimation(oneSlot,0)
+    val animationSlot1 = slotAnimation(oneSlot,decalage * 1)
+    val animationSlot2 = slotAnimation(oneSlot,decalage * 2)
+    val animationSlot3 = slotAnimation(oneSlot,decalage * 3)
     val threeSlotsAnimation: Animation<TextureRegion> = run {
         val attackFrames = TextureRegion.split(threeSlots, 150, 200)[0]
         Animation(0.08f, *attackFrames)
@@ -114,10 +115,10 @@ class MachineRenderer(
         batch.draw(wheelBackground, PANEL_X, PANEL_Y, 240f, 180f)
 
         // Dessin des slots avec leur propre stateTime
-        val currentOneSlotFrame1 = animation0.getKeyFrame(stateTimeLever)
-        val currentOneSlotFrame2 = animation1.getKeyFrame(stateTimeLever)
-        val currentOneSlotFrame3 = animation2.getKeyFrame(stateTimeLever)
-        val currentOneSlotFrame4 = animation3.getKeyFrame(stateTimeLever)
+        val currentOneSlotFrame1 = animationSlot0.getKeyFrame(stateTimeLever)
+        val currentOneSlotFrame2 = animationSlot1.getKeyFrame(stateTimeLever)
+        val currentOneSlotFrame3 = animationSlot2.getKeyFrame(stateTimeLever)
+        val currentOneSlotFrame4 = animationSlot3.getKeyFrame(stateTimeLever)
         val decalageX = -56f
         val decalageY = 36
 
