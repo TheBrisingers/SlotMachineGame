@@ -260,6 +260,11 @@ class BattleRenderer(
         font.color = Color.WHITE
         font.data.setScale(0.4f)
 
+        // Affichage de la vague actuelle en haut à gauche de la zone de combat
+        font.data.setScale(0.55f)
+        font.draw(batch, "Vague 1 - ${battleState.waveNumber}", COMBAT_X + 10f, COMBAT_Y + COMBAT_H - 10f)
+        font.data.setScale(0.4f)
+
         // HP mage
         font.draw(batch, "${battleState.hero.health}/${battleState.hero.maxHealth}", MAGE_X + 10f, MAGE_Y + MAGE_H + 16f)
 
