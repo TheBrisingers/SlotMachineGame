@@ -8,187 +8,211 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
-import fr.thebrisingers.slotmachinegame.data.PANEL_W
-import fr.thebrisingers.slotmachinegame.data.PANEL_X
-import fr.thebrisingers.slotmachinegame.data.PANEL_Y
-import fr.thebrisingers.slotmachinegame.data.SPELLS_H
-import fr.thebrisingers.slotmachinegame.data.SPIN_PRICE
-import fr.thebrisingers.slotmachinegame.data.WORLD_H
-import fr.thebrisingers.slotmachinegame.data.WORLD_W
+import fr.thebrisingers.slotmachinegame.data.*
+import fr.thebrisingers.slotmachinegame.data.spell.Symbol
 import fr.thebrisingers.slotmachinegame.inventory.InventoryState
 import ktx.assets.disposeSafely
-import kotlin.math.roundToInt
 
 class MachineRenderer(
     private val machineState: MachineState,
     private val inventoryState: InventoryState,
     private val batch: SpriteBatch,
     private val shapeRenderer: ShapeRenderer,
-    private val font: BitmapFont
+    private val font: BitmapFont,
 ) {
+    private val frameCount = 68
+    private val visibleRows = 3
+    private val renderRows = 4
+    private val framePhase = frameCount / visibleRows  // 22
+    private val spinFramesPerSecond = 300f
+    private val cyclesBeforeStop = 1
+    private val reelStopDelays = listOf(1.2f, 2.2f, 3.2f)
+
+    private val symbolDisplayW = 150f
+    private val symbolDisplayH = 200f
+
+    val decalageX = -56f
+    val decalageY = 32f
+    private val rowOffsetX = 57f
+    private val rowSpacingY = -11f
+    private val maxSpinSymbols = 20
+
     private val textureFocused = Texture(Gdx.files.internal("lever/lever_focused.png"))
-    private val textureActivation = Texture(Gdx.files.internal("lever/lever_activated.png")) // Nouveau fichier
-    private val wheelBackground = Texture(Gdx.files.internal("wheel/roue_a_sous.png")) // Nouveau fichier
-    private val background = Texture(Gdx.files.internal("wheel/background.png")) // Nouveau fichier
-    private val oneSlot = Texture(Gdx.files.internal("wheel/slot machine-sheet.png")) // Nouveau fichier
-    private val waterSlot = Texture(Gdx.files.internal("wheel/water_slot.png")) // Nouveau fichier
-    private val threeSlots = Texture(Gdx.files.internal("wheel/3 slot machinet.png")) // Nouveau fichier
+    private val textureActivation = Texture(Gdx.files.internal("lever/lever_activated.png"))
+    private val wheelBackground = Texture(Gdx.files.internal("wheel/roue_a_sous.png"))
+    private val background = Texture(Gdx.files.internal("wheel/background.png"))
 
-    private val earthRune = Texture(Gdx.files.internal("runes/earth.png"))
-    private val fireRune = Texture(Gdx.files.internal("runes/fire.png"))
-    private val waterRune = Texture(Gdx.files.internal("runes/water.png"))
-    private val windRune = Texture(Gdx.files.internal("runes/wind.png"))
-    private val simpleCoin = Texture(Gdx.files.internal("runes/simple_coin.png"))
-    val frameDuration = 0.01f
+    private val symbolTextures: Map<Symbol, Texture> = mapOf(
+        Symbol.WATER to Texture(Gdx.files.internal("wheel/water_slot.png")),
+        Symbol.FIRE to Texture(Gdx.files.internal("wheel/fire_slot.png")),
+        Symbol.EARTH to Texture(Gdx.files.internal("wheel/slot machine-earth.png")),
+        Symbol.WIND to Texture(Gdx.files.internal("wheel/wind_slot.png")),
+        Symbol.SIMPLE_COIN to Texture(Gdx.files.internal("wheel/slot machine-Coin.png")),
+        Symbol.MULTIPLE_COIN to Texture(Gdx.files.internal("wheel/slot machine-TripleCoin.png")),
+        Symbol.COIN_BAG to Texture(Gdx.files.internal("wheel/slot machine-bag_coin.png")),
+        Symbol.JOKER to Texture(Gdx.files.internal("wheel/slot machine-Joker.png")),
+        Symbol.HEAL to Texture(Gdx.files.internal("wheel/slot machine-heart.png")),
+    )
 
-
-    fun slotAnimation(texture: Texture, initialFrame: Int): Animation<TextureRegion> = run {
-        val allFrames = TextureRegion.split(texture, 150, 200)[0]
-        // On réordonne le tableau pour commencer à 'initialFrame'
-        val rotatedFrames = Array(allFrames.size) { i ->
-            allFrames[(i + initialFrame) % allFrames.size]
-        }
-        Animation(frameDuration, *rotatedFrames)
-    }.apply {
-        playMode = Animation.PlayMode.LOOP
+    private val symbolFrames: Map<Symbol, Array<TextureRegion>> = symbolTextures.mapValues { (_, tex) ->
+        TextureRegion.split(tex, 150, 200)[0]
     }
 
-    val decalage = 17
-
-    val animationSlot0 = slotAnimation(oneSlot,0)
-    val animationSlot1 = slotAnimation(oneSlot,decalage * 1)
-    val animationSlot2 = slotAnimation(oneSlot,decalage * 2)
-    val animationSlot3 = slotAnimation(oneSlot,decalage * 3)
-    val threeSlotsAnimation: Animation<TextureRegion> = run {
-        val attackFrames = TextureRegion.split(threeSlots, 150, 200)[0]
-        Animation(0.08f, *attackFrames)
-    }.apply {
-        playMode = Animation.PlayMode.LOOP
-    }
     private val focusAnimation: Animation<TextureRegion>
     private val activationAnimation: Animation<TextureRegion>
     private val idleRegion: TextureRegion
-
     private var stateTimeLever = 0f
-    private var stateTimeWheel = 0f
     private var isActivating = false
 
-    init {
-        // On découpe la feuille (ex: frames de 32x32, à ajuster selon ton PNG)
-        val frames = TextureRegion.split(textureFocused, 32, 98)
-        val animationFrames = frames[0]
+    data class ReelState(
+        var globalFrame: Int = 0,
+        var spinTime: Float = 0f,
+        val spinDuration: Float,
+        var isSpinning: Boolean = false,
+        var stopped: Boolean = true,
+        var accumulator: Float = 0f,
+    )
 
-        idleRegion = animationFrames[0]
-        focusAnimation = Animation(0.1f, *animationFrames)
-        focusAnimation.playMode = Animation.PlayMode.LOOP
-
-        val activationFrames = TextureRegion.split(textureActivation, 32, 95)[0]
-        activationAnimation = Animation(0.05f, *activationFrames)
-        activationAnimation.playMode = Animation.PlayMode.NORMAL
+    private var reelStates: List<ReelState> = reelStopDelays.map { delay ->
+        ReelState(spinDuration = delay, stopped = true)
     }
 
-    // Appelé par GameScreen quand on appuie sur Espace
+
+    init {
+        val leverFrames = TextureRegion.split(textureFocused, 32, 98)[0]
+        idleRegion = leverFrames[0]
+        focusAnimation = Animation(0.1f, *leverFrames).apply {
+            playMode = Animation.PlayMode.LOOP
+        }
+        val activationFrames = TextureRegion.split(textureActivation, 32, 95)[0]
+        activationAnimation = Animation(0.05f, *activationFrames).apply {
+            playMode = Animation.PlayMode.NORMAL
+        }
+    }
+
     fun triggerActivation() {
         isActivating = true
         stateTimeLever = 0f
+
+        val limitedWheels = listOf(
+            machineState.machine.wheelOne,
+            machineState.machine.wheelTwo,
+            machineState.machine.wheelThree,
+        ).map { getLimitedWheel(it) }
+
+        val sequentialDelay = listOf(0f, 0.8f, 1.6f)
+
+        reelStates = limitedWheels.mapIndexed { index, wheel ->
+            val totalFrames = wheel.size * frameCount
+            val duration = (totalFrames * cyclesBeforeStop) / spinFramesPerSecond + sequentialDelay[index]
+            ReelState(
+                globalFrame = 0,
+                spinTime = 0f,
+                spinDuration = duration,
+                isSpinning = true,
+                stopped = false,
+                accumulator = 0f,
+            )
+        }
     }
 
+    private fun getLimitedWheel(wheel: List<Symbol>): List<Symbol> =
+        if (wheel.size > maxSpinSymbols) wheel.takeLast(maxSpinSymbols) else wheel
+
     fun render(delta: Float, isFocused: Boolean) {
-        val coinsValue = inventoryState.coins
-
-        font.color = Color.WHITE
-
-        val buttonWidth = 30f
-        val buttonHeight = 90f
-        val gap = 15f
-        val posX = WORLD_W - buttonWidth - gap
-        val posY = SPELLS_H + 45f
-        val coinX = PANEL_X + PANEL_W / 2 - 8f
-        val coinY = WORLD_H - 25f
-
         stateTimeLever += delta
-        stateTimeWheel += delta
 
-        val runePosDelta = -137 / 68
-        val totalDelta = (((runePosDelta * stateTimeLever)/ frameDuration % 137 +1) /2).roundToInt()*2
+        val wheels = listOf(
+            machineState.machine.wheelOne,
+            machineState.machine.wheelTwo,
+            machineState.machine.wheelThree,
+        ).map { getLimitedWheel(it) }
+
+        reelStates.forEachIndexed { index, reel ->
+            if (reel.isSpinning) {
+                reel.spinTime += delta
+                reel.accumulator += delta * spinFramesPerSecond
+                val framesToAdvance = reel.accumulator.toInt()
+                reel.globalFrame += framesToAdvance
+                reel.accumulator -= framesToAdvance
+
+                if (reel.spinTime >= reel.spinDuration) {
+                    val totalFrames = wheels[index].size * frameCount
+                    val currentFrameInSymbol = reel.globalFrame % frameCount
+                    val framesToEndOfSymbol = if (currentFrameInSymbol == 0) 0
+                    else frameCount - currentFrameInSymbol
+                    reel.globalFrame += framesToEndOfSymbol
+                    reel.globalFrame = ((reel.globalFrame / totalFrames) + 1) * totalFrames
+                    reel.isSpinning = false
+                    reel.stopped = true
+                }
+            }
+        }
 
         batch.begin()
-
-        // Dessin du fond de la roue
         batch.draw(wheelBackground, PANEL_X, PANEL_Y, 240f, 180f)
-
-        // Dessin des slots avec leur propre stateTime
-        val currentOneSlotFrame1 = animationSlot0.getKeyFrame(stateTimeLever)
-        val currentOneSlotFrame2 = animationSlot1.getKeyFrame(stateTimeLever)
-        val currentOneSlotFrame3 = animationSlot2.getKeyFrame(stateTimeLever)
-        val currentOneSlotFrame4 = animationSlot3.getKeyFrame(stateTimeLever)
-        val decalageX = -56f
-        val decalageY = 36
-
-        batch.draw(currentOneSlotFrame1, PANEL_X + decalageX, PANEL_Y + decalageY, 150f, 200f)
-        batch.draw(currentOneSlotFrame2, PANEL_X + decalageX, PANEL_Y + decalageY, 150f, 200f)
-        batch.draw(currentOneSlotFrame3, PANEL_X + decalageX, PANEL_Y + decalageY, 150f, 200f)
-        batch.draw(currentOneSlotFrame4, PANEL_X + decalageX, PANEL_Y + decalageY, 150f, 200f)
-
-        batch.draw(currentOneSlotFrame1, PANEL_X + decalageX + 57f, PANEL_Y + decalageY, 150f, 200f)
-        batch.draw(currentOneSlotFrame2, PANEL_X + decalageX + 57f, PANEL_Y + decalageY, 150f, 200f)
-        batch.draw(currentOneSlotFrame3, PANEL_X + decalageX + 57f, PANEL_Y + decalageY, 150f, 200f)
-        batch.draw(currentOneSlotFrame4, PANEL_X + decalageX + 57f, PANEL_Y + decalageY, 150f, 200f)
-
-        batch.draw(currentOneSlotFrame1, PANEL_X + decalageX + 57f + 56f, PANEL_Y + decalageY, 150f, 200f)
-        batch.draw(currentOneSlotFrame2, PANEL_X + decalageX + 57f + 56f, PANEL_Y + decalageY, 150f, 200f)
-        batch.draw(currentOneSlotFrame3, PANEL_X + decalageX + 57f + 56f, PANEL_Y + decalageY, 150f, 200f)
-        batch.draw(currentOneSlotFrame4, PANEL_X + decalageX + 57f + 56f, PANEL_Y + decalageY, 150f, 200f)
-
-        // Obtenez la frame actuelle de l'animation threeSlotsAnimation
-        val currentThreeSlotsFrame = threeSlotsAnimation.getKeyFrame(stateTimeWheel)
-        //batch.draw(currentThreeSlotsFrame, PANEL_X, PANEL_Y, 150f, 200f)
-
-        batch.draw(earthRune, PANEL_X + 40f, PANEL_Y + 137 + totalDelta, 32f, 32f)
-        batch.draw(earthRune, PANEL_X + 40f, PANEL_Y + 0, 32f, 32f)
-
         batch.end()
+
+        drawSymbols(wheels)
 
         batch.begin()
         batch.draw(background, PANEL_X, PANEL_Y, 240f, 180f)
-        batch.end()
 
-        batch.begin()
-
-        val frame = when {
-            // 1. Priorité à l'animation d'activation (le clic)
+        val leverFrame = when {
             isActivating -> {
                 if (activationAnimation.isAnimationFinished(stateTimeLever)) {
                     isActivating = false
                     stateTimeLever = 0f
-                    activationAnimation.getKeyFrame(stateTimeLever)
+                    activationAnimation.getKeyFrame(0f)
                 } else {
                     activationAnimation.getKeyFrame(stateTimeLever)
                 }
             }
-            // 2. Si on a le focus, on joue l'anim de brillance
             isFocused -> focusAnimation.getKeyFrame(stateTimeLever)
-            // 3. Sinon, repos
             else -> {
                 stateTimeLever = 0f
                 idleRegion
             }
         }
 
+        val buttonWidth = 30f
+        val buttonHeight = 90f
+        val gap = 15f
+        batch.draw(leverFrame, WORLD_W - buttonWidth - gap, SPELLS_H + 45f, buttonWidth, buttonHeight)
         font.color = Color.WHITE
-        font.data.setScale(0.4f) // Texte assez petit
-        // On le place 10 pixels sous le levier (posY - 10f)
-        val priceText = "$SPIN_PRICE"
-        font.draw(batch, priceText, posX + 10f, posY - 5f)
+        font.draw(batch, "${inventoryState.coins}", PANEL_X + PANEL_W / 2 - 8f, WORLD_H - 22f)
+        batch.end()
+    }
 
-        // On dessine l'icône de la pièce juste à côté du chiffre
-        // On ajuste la position Y (-15f) pour que l'icône soit alignée avec le texte
-        batch.draw(simpleCoin, posX + 14f, posY - 14f, 12f, 12f)
+    private fun drawSymbols(wheels: List<List<Symbol>>) {
+        batch.begin()
 
+        wheels.forEachIndexed { wheelIndex, wheel ->
+            val posX = PANEL_X + decalageX + wheelIndex * rowOffsetX
+            val reel = reelStates[wheelIndex]
 
-        font.data.setScale(1f)
-        batch.draw(frame, posX, posY, buttonWidth, buttonHeight)
-        font.draw(batch, "$coinsValue", coinX, coinY + 3f)
+            for (row in 0 until renderRows) {
+                val symbolIndex: Int
+                val frameIndex: Int
+
+                if (reel.stopped) {
+                    symbolIndex = row.coerceAtMost(visibleRows - 1)
+                    frameIndex = (row * framePhase).mod(frameCount)
+                } else {
+                    val totalFrames = wheel.size * frameCount
+                    val rowOffset = row * (frameCount + framePhase)
+                    val rowGlobalFrame = (reel.globalFrame + rowOffset).mod(totalFrames)
+                    symbolIndex = rowGlobalFrame / frameCount
+                    frameIndex = rowGlobalFrame % frameCount
+                }
+
+                val symbol = wheel[symbolIndex.coerceIn(0, wheel.size - 1)]
+                val frames = symbolFrames[symbol] ?: continue
+                val posY = PANEL_Y + decalageY + (renderRows - 1 - row) * rowSpacingY
+
+                batch.draw(frames[frameIndex], posX, posY, symbolDisplayW, symbolDisplayH)
+            }
+        }
 
         batch.end()
     }
@@ -196,5 +220,8 @@ class MachineRenderer(
     fun dispose() {
         textureFocused.disposeSafely()
         textureActivation.disposeSafely()
+        wheelBackground.disposeSafely()
+        background.disposeSafely()
+        symbolTextures.values.forEach { it.disposeSafely() }
     }
 }
