@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.InputMultiplexer
+import com.badlogic.gdx.audio.Music
 import com.badlogic.gdx.audio.Sound
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.ScreenUtils
@@ -32,6 +33,8 @@ class GameScreen : KtxScreen, InputAdapter() {
 
     private lateinit var stage: Stage
     private var focusChangeSound: Sound? = null
+    private var spellCastSound: Sound? = null
+    private var backgroundMusic: Music? = null
 
     override fun show() {
         stage = Stage(ScreenViewport())
@@ -57,6 +60,17 @@ class GameScreen : KtxScreen, InputAdapter() {
 
         val soundFile = Gdx.files.internal("sounds/switch_focus.mp3")
         if (soundFile.exists()) focusChangeSound = Gdx.audio.newSound(soundFile)
+
+        val spellSoundFile = Gdx.files.internal("sounds/throw_power.mp3")
+        if (spellSoundFile.exists()) spellCastSound = Gdx.audio.newSound(spellSoundFile)
+
+        val musicFile = Gdx.files.internal("sounds/background_music.mp3")
+        if (musicFile.exists()) {
+            backgroundMusic = Gdx.audio.newMusic(musicFile)
+            backgroundMusic?.isLooping = true
+            backgroundMusic?.volume = 0.1f
+            backgroundMusic?.play()
+        }
     }
 
     override fun render(delta: Float) {
@@ -76,6 +90,9 @@ class GameScreen : KtxScreen, InputAdapter() {
         gameRenderer.dispose()
         stage.disposeSafely()
         focusChangeSound?.disposeSafely()
+        spellCastSound?.disposeSafely()
+        backgroundMusic?.stop()
+        backgroundMusic?.disposeSafely()
     }
 
     private var spaceHoldStartTime = 0L
@@ -166,6 +183,7 @@ class GameScreen : KtxScreen, InputAdapter() {
 
                     // 3. Animation du héros
                    gameRenderer.battleRenderer.triggerCast(hitIndices.toList())
+                    spellCastSound?.play(3f)
                 } else {
                     gameRenderer.inventoryRenderer.triggerErrorFlash()
 
