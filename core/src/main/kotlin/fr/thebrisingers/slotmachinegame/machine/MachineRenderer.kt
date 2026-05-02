@@ -4,11 +4,9 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Animation
-import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
-import fr.thebrisingers.slotmachinegame.data.COMBAT_W
 import fr.thebrisingers.slotmachinegame.data.SPELLS_H
 import fr.thebrisingers.slotmachinegame.data.WORLD_W
 import ktx.assets.disposeSafely
@@ -20,13 +18,13 @@ class MachineRenderer(
 ) {
     private val textureFocused = Texture(Gdx.files.internal("lever/lever_focused.png"))
     private val textureActivation = Texture(Gdx.files.internal("lever/lever_activated.png")) // Nouveau fichier
-
     private val focusAnimation: Animation<TextureRegion>
     private val activationAnimation: Animation<TextureRegion>
     private val idleRegion: TextureRegion
 
     private var stateTime = 0f
     private var isActivating = false
+
 
     init {
         // On découpe la feuille (ex: frames de 32x32, à ajuster selon ton PNG)
@@ -49,6 +47,7 @@ class MachineRenderer(
     }
 
     fun render(delta: Float, isFocused: Boolean) {
+
         val buttonWidth = 30f
         val buttonHeight = 90f
         val gap = 15f

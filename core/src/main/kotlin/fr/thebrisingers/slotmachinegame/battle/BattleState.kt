@@ -51,10 +51,16 @@ class BattleState {
     fun advanceMonsterTurn() {
         if (phase != TurnPhase.PLAYER_TURN) return
         phase = TurnPhase.MONSTER_TURN
-        monsters.filter { it.isAlive }.onEach {
-            it.advanceTurn()
-            if (it.attackThisTurn) {
-                hero.takeDamage(it.attackDamage)
+        monsters.filter { it.isAlive }.onEach { monster ->
+            val isAttacking = monster.advanceTurn()
+
+            if (isAttacking) {
+                // 2. On inflige les dégâts au héros
+                hero.takeDamage(monster.attackDamage)
+
+                // 3. On pourra appeler le reset APRES l'animation dans le Renderer
+                // Ou on le fait ici si on n'attend pas l'animation :
+                monster.resetTurnsUntilNextAttack()
             }
         }
         checkBattleStatus()

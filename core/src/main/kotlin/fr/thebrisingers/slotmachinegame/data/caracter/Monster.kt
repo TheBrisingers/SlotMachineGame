@@ -15,7 +15,7 @@ data class Monster(
     var turnsUntilNextAttack = attackSpeed
         private set
 
-    val attackThisTurn get() = turnsUntilNextAttack == 0
+    val attackThisTurn get() = turnsUntilNextAttack == 1
 
     val attackDamage: Int = category.attackDamage + faction.attackDamageModifier
 
@@ -25,10 +25,13 @@ data class Monster(
         health = (health + damage).coerceIn(0..maxHealth)
     }
 
-    fun advanceTurn() {
-        if (turnsUntilNextAttack > 0) {
-            turnsUntilNextAttack--
+    fun advanceTurn(): Boolean {
+        val willAttack = attackThisTurn
+        turnsUntilNextAttack--
+        if (turnsUntilNextAttack <= 0) {
+           resetTurnsUntilNextAttack() // Reset du compteur
         }
+        return willAttack
     }
 
     fun resetTurnsUntilNextAttack() {

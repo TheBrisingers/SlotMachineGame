@@ -100,6 +100,14 @@ class GameScreen : KtxScreen, InputAdapter() {
         when (val target = focusManager.current) {
             is FocusTarget.Spin -> {
                 gameRenderer.machineRenderer.triggerActivation()
+
+                // Déclencher les animations pour chaque monstre qui va attaquer
+                battleState.monsters.forEachIndexed { index, monster ->
+                    if (monster.attackThisTurn) {
+                        gameRenderer.battleRenderer.triggerMonsterAttack(index)
+                    }
+                }
+
                 battleState.advanceMonsterTurn()
                 machineState.spin()
             }
@@ -131,9 +139,6 @@ class GameScreen : KtxScreen, InputAdapter() {
 
                     // 3. Animation du héros
                    gameRenderer.battleRenderer.triggerCast(hitIndices.toList())
-
-                    // 4. Tour des monstres
-                    battleState.advanceMonsterTurn()
                 } else {
                     gameRenderer.inventoryRenderer.triggerErrorFlash()
 

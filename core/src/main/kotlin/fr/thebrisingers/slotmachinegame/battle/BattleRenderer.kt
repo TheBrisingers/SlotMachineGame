@@ -1,6 +1,8 @@
 package fr.thebrisingers.slotmachinegame.battle
 
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Animation
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
@@ -19,6 +21,7 @@ class BattleRenderer(
     private val batch: SpriteBatch,
     private val shapeRenderer: ShapeRenderer,
 ) {
+    private val combatIcon = Texture(Gdx.files.internal("combat.png"))
     private var currentAnimation: Animation<TextureRegion>
     private var stateTime = 0f
 
@@ -28,6 +31,8 @@ class BattleRenderer(
     private val monsterHitStateTimes = FloatArray(3)
     private val monsterDeathStateTimes = FloatArray(3)
     private val monsterIsDying = BooleanArray(3)
+    private val monsterAttackStateTimes = FloatArray(3)
+    private val monsterIsAttacking = BooleanArray(3)
 
     private val font = BitmapFont()
 
@@ -50,9 +55,13 @@ class BattleRenderer(
         // Optionnel : décaler le temps de départ des monstres pour qu'ils ne bougent pas tous en même temps
         for (i in monsterHitStateTimes.indices) {
             monsterStateTimes[i] = (0..100).random() / 100f
+            // Les monstres subissent
             monsterHitStateTimes[i] = 99f   // Initialisé à "fini"
             monsterDeathStateTimes[i] = 99f // Initialisé à "fini"
             monsterIsDying[i] = false
+            // les monstres attaquent
+            monsterAttackStateTimes[i] = 99f
+            monsterIsAttacking[i] = false
         }
     }
 
@@ -71,6 +80,13 @@ class BattleRenderer(
         }
     }
 
+    fun triggerMonsterAttack(index: Int) {
+        if (index in monsterIsAttacking.indices) {
+            monsterIsAttacking[index] = true
+            monsterAttackStateTimes[index] = 0f
+        }
+    }
+
     fun render(delta: Float) {
         // On force le retour au blanc pour éviter les fuites de couleur de l'inventaire
         batch.color = Color.WHITE
@@ -81,6 +97,17 @@ class BattleRenderer(
             monsterStateTimes[i] += delta
             monsterHitStateTimes[i] += delta
             monsterDeathStateTimes[i] += delta
+            monsterAttackStateTimes[i] += delta
+
+            // Si l'attaque du monstre i est finie, on déclenche le hit du héros
+            if (monsterIsAttacking[i]) {
+                val attackAnim = getAttackAnim(battleState.monsters[i].faction)
+                if (attackAnim.isAnimationFinished(monsterAttackStateTimes[i])) {
+                    monsterIsAttacking[i] = false
+                    // On joue l'animation de dégâts du héros (si elle existe dans InitHero)
+                    playAnimation(InitHero.getHitAnimation)
+                }
+            }
         }
 
         // Logique de retour à l'IDLE pour le héros
@@ -103,6 +130,7 @@ class BattleRenderer(
         battleState.monsters.forEachIndexed { i, monster ->
             val hitAnim = getHitAnim(monster.faction)
             val deathAnim = getDeathAnim(monster.faction)
+            val attackAnim = getAttackAnim(monster.faction)
 
             // Détection du début de la mort
             if (!monster.isAlive && !monsterIsDying[i] && monsterDeathStateTimes[i] > 1f) {
@@ -113,17 +141,20 @@ class BattleRenderer(
             // Déterminer quelle animation afficher
             val isHit = monsterHitStateTimes[i] < hitAnim.animationDuration
             val isDying = monsterIsDying[i] && !deathAnim.isAnimationFinished(monsterDeathStateTimes[i])
+            val isAttacking = monsterIsAttacking[i]
 
             if (monster.isAlive || isDying || isHit) {
                 val anim = when {
                     isDying -> deathAnim
                     isHit -> hitAnim
+                    isAttacking -> attackAnim
                     else -> monsterAnimations[monster.faction]
                 }
 
                 val time = when {
                     isDying -> monsterDeathStateTimes[i]
                     isHit -> monsterHitStateTimes[i]
+                    isAttacking -> monsterAttackStateTimes[i]
                     else -> monsterStateTimes[i]
                 }
 
@@ -145,6 +176,12 @@ class BattleRenderer(
         Faction.SKELETON -> InitSkeleton.getHitAnimation
         Faction.ZOMBIE -> InitRogue.getHitAnimation
         Faction.GOBLIN -> InitOrc.getHitAnimation
+    }
+
+    private fun getAttackAnim(faction: Faction) = when(faction) {
+        Faction.SKELETON -> InitSkeleton.attackAnimation
+        Faction.ZOMBIE -> InitRogue.attackAnimation
+        Faction.GOBLIN -> InitOrc.attackAnimation
     }
 
     private fun getDeathAnim(faction: Faction) = when(faction) {
@@ -185,6 +222,13 @@ class BattleRenderer(
                 val x = ENEMY_START_X + i * (ENEMY_W + ENEMY_GAP) + (ENEMY_W - barWidth) / 2f
                 drawHealthBar(x, ENEMY_Y + ENEMY_H + 10f,
                     monster.health, monster.maxHealth, barWidth, barHeight)
+                // On dessine un petit cercle orange pour l'intention d'attaque
+                val circleX = x + ENEMY_W - 10f
+                val circleY = ENEMY_Y + ENEMY_H + 22f
+
+                // Couleur changeante : rouge si attaque au prochain tour, sinon orange
+                shapeRenderer.color = if (monster.turnsUntilNextAttack <= 1) Color.RED else Color.ORANGE
+                shapeRenderer.circle(circleX, circleY, 3f)
             }
         }
         shapeRenderer.end()
@@ -206,6 +250,16 @@ class BattleRenderer(
         // HP ennemis
         battleState.monsters.forEachIndexed { i, monster ->
             if (monster.isAlive) {
+                val x = ENEMY_START_X + i * (ENEMY_W + ENEMY_GAP)
+                val circleX = x + ENEMY_W - 10f
+                val circleY = ENEMY_Y + ENEMY_H + 22f
+
+                // On affiche le nombre de tours à l'intérieur du cercle
+                font.color = Color.WHITE
+                // Ajustement pour centrer le chiffre dans le cercle
+                font.draw(batch, "${monster.turnsUntilNextAttack}", circleX - 6f, circleY + 3f)
+                batch.draw(combatIcon, circleX, circleY - 4f, 10f, 10f)
+
                 font.draw(
                     batch,
                     "${monster.health}/${monster.maxHealth}",
@@ -244,5 +298,6 @@ class BattleRenderer(
         InitOrc.dispose()
         InitRogue.dispose()
         InitSkeleton.dispose()
+        combatIcon.disposeSafely()
     }
 }
