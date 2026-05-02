@@ -54,6 +54,8 @@ class GameRenderer(
 
         stage.act(delta)
         stage.draw()
+
+        battleRenderer.renderEndScreen()
     }
 
     fun dispose() {

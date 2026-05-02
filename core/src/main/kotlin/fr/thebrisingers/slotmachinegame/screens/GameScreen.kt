@@ -12,6 +12,7 @@ import fr.thebrisingers.slotmachinegame.FocusTarget
 import fr.thebrisingers.slotmachinegame.data.spell.Target
 import fr.thebrisingers.slotmachinegame.battle.BattleState
 import fr.thebrisingers.slotmachinegame.data.SPIN_PRICE
+import fr.thebrisingers.slotmachinegame.data.gameStatus.TurnPhase
 import fr.thebrisingers.slotmachinegame.inventory.InventoryState
 import fr.thebrisingers.slotmachinegame.machine.MachineState
 import fr.thebrisingers.slotmachinegame.spellBar.SpellBarState
@@ -75,6 +76,8 @@ class GameScreen : KtxScreen, InputAdapter() {
     private val holdThresholdMs = 500L // seuil hold = 500ms
 
     override fun keyDown(keycode: Int): Boolean {
+        if (battleState.phase != TurnPhase.PLAYER_TURN) return false
+
         if (keycode == Keys.SPACE) {
             spaceHoldStartTime = System.currentTimeMillis()
         }
@@ -82,6 +85,15 @@ class GameScreen : KtxScreen, InputAdapter() {
     }
 
     override fun keyUp(keycode: Int): Boolean {
+        // Si on est en fin de partie et qu'on appuie sur R, on pourrait reset le jeu
+        if ((battleState.phase == TurnPhase.VICTORY || battleState.phase == TurnPhase.GAME_OVER)
+            && keycode == Keys.R) {
+            show() // Relance l'initialisation du jeu
+            return true
+        }
+
+        if (battleState.phase != TurnPhase.PLAYER_TURN) return false
+
         if (keycode == Keys.SPACE) {
             val duration = System.currentTimeMillis() - spaceHoldStartTime
             if (duration < holdThresholdMs) {

@@ -4,9 +4,10 @@ data class Monster(
     val id: Int,
     val category: Category,
     val faction: Faction,
+    val difficultyMultiplier: Float = 1f
 ) : Entity {
 
-    val maxHealth = category.health + faction.healthModifier
+    val maxHealth = ((category.health + faction.healthModifier) * difficultyMultiplier).toInt()
     var health: Int = maxHealth
         private set
 

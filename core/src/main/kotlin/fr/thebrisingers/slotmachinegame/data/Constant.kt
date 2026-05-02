@@ -6,7 +6,9 @@ import kotlin.math.round
 
 const val SPIN_PRICE = 5
 const val INITIAL_COINS = 50
-const val HERO_MAX_HEALTH = 100
+const val HERO_MAX_HEALTH = 2
+
+const val MAX_WAVES = 1
 
 val FIRE_SYMBOL_EARNING = Earning(1, 3)
 val WATER_SYMBOL_EARNING = Earning(1, 3)

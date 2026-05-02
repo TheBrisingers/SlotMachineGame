@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Animation
 import com.badlogic.gdx.graphics.g2d.BitmapFont
+import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
@@ -14,6 +15,8 @@ import fr.thebrisingers.slotmachinegame.battle.init.InitRogue
 import fr.thebrisingers.slotmachinegame.battle.init.InitSkeleton
 import fr.thebrisingers.slotmachinegame.data.*
 import fr.thebrisingers.slotmachinegame.data.caracter.Faction
+import fr.thebrisingers.slotmachinegame.data.gameStatus.TurnPhase
+import ktx.app.clearScreen
 import ktx.assets.disposeSafely
 
 class BattleRenderer(
@@ -36,7 +39,10 @@ class BattleRenderer(
 
     private val backgroud = Texture(Gdx.files.internal("combat_background.jpg"))
 
+    private var lastWaveRendered = 1
+
     private val font = BitmapFont()
+    private val layout = GlyphLayout()
 
     var isAnimationDone = true
         private set
@@ -94,6 +100,17 @@ class BattleRenderer(
         batch.color = Color.WHITE
         font.color = Color.WHITE
 
+        // Si la vague a changé dans le state, on reset nos timers locaux
+        if (battleState.waveNumber != lastWaveRendered) {
+            lastWaveRendered = battleState.waveNumber
+            for (i in monsterStateTimes.indices) {
+                monsterStateTimes[i] = 0f
+                monsterHitStateTimes[i] = 99f
+                monsterDeathStateTimes[i] = 99f
+                monsterIsDying[i] = false
+            }
+        }
+
         stateTime += delta
         for (i in monsterStateTimes.indices) {
             monsterStateTimes[i] += delta
@@ -124,6 +141,10 @@ class BattleRenderer(
         drawCombatZone()       // 1. Fond et HP
         drawMonsterAnimations() // 2. Monstres
         drawHeroAnimation()    // 3. Héros (par dessus)
+
+        if (battleState.phase == TurnPhase.VICTORY || battleState.phase == TurnPhase.GAME_OVER) {
+            drawEndScreen()
+        }
     }
 
 
@@ -174,6 +195,37 @@ class BattleRenderer(
         }
         batch.end()
     }
+
+    private fun drawEndScreen() {
+        clearScreen(0f,0f,0f)
+        // 1. Dessiner un voile sombre sur tout l'écran
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        shapeRenderer.color = Color(0f, 0f, 0f, 0.7f) // Noir transparent
+        shapeRenderer.rect(0f, 0f, WORLD_W, WORLD_H)
+        shapeRenderer.end()
+
+        batch.begin()
+        font.data.setScale(1.5f)
+
+        val isVictory = battleState.phase == TurnPhase.VICTORY
+        font.color = if (isVictory) Color.GOLD else Color.RED
+
+        val message = if (isVictory) "VICTOIRE !" else "GAME OVER"
+
+        val layout = GlyphLayout(font, message)
+        font.draw(batch, message, (WORLD_W - layout.width) / 2, (WORLD_H + layout.height) / 2)
+
+        font.data.setScale(0.6f)
+        font.color = Color.WHITE
+        val subMessage =
+            if (isVictory) "Vous avez triomphé des $MAX_WAVES vagues" else "Le mage a succombé..."
+        val subLayout = GlyphLayout(font, subMessage)
+        font.draw(batch, subMessage, (WORLD_W - subLayout.width) / 2, (WORLD_H / 2) - 40f)
+
+        batch.end()
+        font.data.setScale(1f) // Reset
+    }
+
     private fun getHitAnim(faction: Faction) = when(faction) {
         Faction.SKELETON -> InitSkeleton.getHitAnimation
         Faction.ZOMBIE -> InitRogue.getHitAnimation
@@ -292,6 +344,45 @@ class BattleRenderer(
         }
 
         shapeRenderer.rect(x, y, width * percent, height)
+    }
+
+    fun renderEndScreen() {
+        val phase = battleState.phase
+        if (phase == TurnPhase.VICTORY || phase == TurnPhase.GAME_OVER) {
+            // 1. Voile sombre
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+            shapeRenderer.color = Color(0f, 0f, 0f, 0.75f)
+            shapeRenderer.rect(0f, 0f, WORLD_W, WORLD_H)
+            shapeRenderer.end()
+
+            batch.begin()
+            val isVictory = phase == TurnPhase.VICTORY
+
+            // --- TITRE PRINCIPAL ---
+            font.data.setScale(1.5f)
+            font.color = if (isVictory) Color.GOLD else Color.RED
+            val mainMessage = if (isVictory) "VICTOIRE !" else "GAME OVER"
+
+            // Calcul du centrage précis pour le titre
+            layout.setText(font, mainMessage)
+            val mainX = (WORLD_W - layout.width) / 2
+            val mainY = (WORLD_H + layout.height) / 2 + 20f
+            font.draw(batch, mainMessage, mainX, mainY)
+
+            // --- SOUS-TITRE ---
+            font.data.setScale(0.6f)
+            font.color = Color.WHITE
+            val subMessage = if (isVictory) "Félicitations aventurier !\n\nAppuyez sur R pour rejouer" else "Appuyez sur R pour retenter"
+
+            // Calcul du centrage précis pour le sous-titre
+            layout.setText(font, subMessage)
+            val subX = (WORLD_W - layout.width) / 2
+            val subY = mainY - 50f // Placé sous le titre principal
+            font.draw(batch, subMessage, subX, subY)
+
+            batch.end()
+            font.data.setScale(1f) // Reset indispensable
+        }
     }
 
     fun dispose() {
