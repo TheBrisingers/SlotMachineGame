@@ -197,3 +197,15 @@ startScripts.classpath = project.tasks.jar.outputs.files
 if(enableGraalNative == 'true') {
   apply from: file("nativeimage.gradle")
 }
+
+tasks.register("construoDist") {
+  group = "distribution"
+  description = "Build all native distributions (Windows, Linux, macOS)"
+
+  dependsOn(
+    "packageLinuxX64",
+    "packageMacM1",
+    "packageMacX64",
+    "packageWinX64"
+  )
+}

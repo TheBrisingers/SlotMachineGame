@@ -124,7 +124,7 @@ class MachineRenderer(
     }
 
     private fun getLimitedWheel(wheel: List<Symbol>): List<Symbol> =
-        if (wheel.size > maxSpinSymbols) wheel.takeLast(maxSpinSymbols) else wheel
+        if (wheel.size > maxSpinSymbols) wheel.take(maxSpinSymbols) else wheel
 
     fun render(delta: Float, isFocused: Boolean) {
         stateTimeLever += delta
@@ -203,7 +203,6 @@ class MachineRenderer(
 
 
         font.data.setScale(1f)
-        font.draw(batch, priceText, coinX, coinY + 3f)
         batch.end()
     }
 

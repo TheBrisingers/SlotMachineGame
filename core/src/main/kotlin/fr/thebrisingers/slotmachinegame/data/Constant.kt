@@ -10,10 +10,10 @@ const val HERO_MAX_HEALTH = 50
 
 const val MAX_WAVES = 5
 
-val FIRE_SYMBOL_EARNING = Earning(1, 3)
-val WATER_SYMBOL_EARNING = Earning(1, 3)
-val EARTH_SYMBOL_EARNING = Earning(1, 3)
-val WIND_SYMBOL_EARNING = Earning(1, 3)
+val FIRE_SYMBOL_EARNING = Earning(3, 7)
+val WATER_SYMBOL_EARNING = Earning(3, 7)
+val EARTH_SYMBOL_EARNING = Earning(3, 7)
+val WIND_SYMBOL_EARNING = Earning(3, 7)
 
 val SIMPLE_COIN_SYMBOL_EARNING = Earning((1.5 * SPIN_PRICE).toInt(), 3 * SPIN_PRICE)
 val MULTIPLE_COIN_SYMBOL_EARNING = Earning(3 * SPIN_PRICE, 5 * SPIN_PRICE)
@@ -24,10 +24,10 @@ val JOKER_SYMBOL_EARNING = Earning(0, 100 * SPIN_PRICE)
 val HEAL_SYMBOL_EARNING = Earning(round(0.1 * HERO_MAX_HEALTH).toInt(), round(0.25 * HERO_MAX_HEALTH).toInt())
 
 val WHEEL_SYMBOL_PROPORTION = mapOf(
-    Symbol.FIRE to 7,
-    Symbol.WATER to 7,
-    Symbol.EARTH to 7,
-    Symbol.WIND to 7,
+    Symbol.FIRE to 14,
+    Symbol.WATER to 14,
+    Symbol.EARTH to 14,
+    Symbol.WIND to 14,
     Symbol.SIMPLE_COIN to 7,
     Symbol.MULTIPLE_COIN to 4,
     Symbol.COIN_BAG to 2,
