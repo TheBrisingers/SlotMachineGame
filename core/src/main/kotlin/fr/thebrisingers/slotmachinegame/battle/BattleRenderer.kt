@@ -3,11 +3,7 @@ package fr.thebrisingers.slotmachinegame.battle
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.g2d.Animation
-import com.badlogic.gdx.graphics.g2d.BitmapFont
-import com.badlogic.gdx.graphics.g2d.GlyphLayout
-import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.badlogic.gdx.graphics.g2d.*
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import fr.thebrisingers.slotmachinegame.battle.init.InitHero
 import fr.thebrisingers.slotmachinegame.battle.init.InitOrc
@@ -150,7 +146,7 @@ class BattleRenderer(
 
     private fun drawMonsterAnimations() {
         batch.begin()
-        battleState.monsters.forEachIndexed { i, monster ->
+        battleState.monsters.reversed().forEachIndexed { i, monster ->
             val hitAnim = getHitAnim(monster.faction)
             val deathAnim = getDeathAnim(monster.faction)
             val attackAnim = getAttackAnim(monster.faction)
@@ -271,7 +267,7 @@ class BattleRenderer(
             battleState.hero.health, battleState.hero.maxHealth, barWidth, barHeight)
 
         // Barres HP Monstres
-        battleState.monsters.forEachIndexed { i, monster ->
+        battleState.monsters.reversed().forEachIndexed { i, monster ->
             if (monster.isAlive) {
                 val x = ENEMY_START_X + i * (ENEMY_W + ENEMY_GAP) + (ENEMY_W - barWidth) / 2f
                 drawHealthBar(x, ENEMY_Y + ENEMY_H + 10f,
@@ -302,7 +298,7 @@ class BattleRenderer(
         font.draw(batch, "${battleState.hero.health}/${battleState.hero.maxHealth}", MAGE_X + 10f, MAGE_Y + MAGE_H + 16f)
 
         // HP ennemis
-        battleState.monsters.forEachIndexed { i, monster ->
+        battleState.monsters.reversed().forEachIndexed { i, monster ->
             if (monster.isAlive) {
                 val x = ENEMY_START_X + i * (ENEMY_W + ENEMY_GAP)
                 val circleX = x + ENEMY_W - 10f
