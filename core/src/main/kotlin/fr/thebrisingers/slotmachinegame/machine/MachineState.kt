@@ -2,10 +2,9 @@ package fr.thebrisingers.slotmachinegame.machine
 
 import fr.thebrisingers.slotmachinegame.data.WHEEL_SYMBOL_PROPORTION
 import fr.thebrisingers.slotmachinegame.data.machine.Machine
-import fr.thebrisingers.slotmachinegame.data.spell.Symbol
 import fr.thebrisingers.slotmachinegame.data.toRandomWheelValue
 
-class MachineState(val onSpinResult: (List<Pair<Symbol, Int>>, Int, Int) -> Unit) {
+class MachineState() { // Removed onSpinResult from constructor
 
     val machine = Machine(
         WHEEL_SYMBOL_PROPORTION.toRandomWheelValue(),
@@ -14,12 +13,11 @@ class MachineState(val onSpinResult: (List<Pair<Symbol, Int>>, Int, Int) -> Unit
     )
 
 
-    fun spin() {
+    fun spin(): Machine.SpinIncomes { // Changed return type to Machine.SpinIncomes
         machine.shuffleWheels()
         val incomes = machine.getIncomes()
         println(incomes)
-        // On envoie les deux infos à GameScreen
-        onSpinResult(incomes.runes, incomes.coins, incomes.heals)
+        // Removed onSpinResult call
+        return incomes // Return the incomes
     }
 }
-

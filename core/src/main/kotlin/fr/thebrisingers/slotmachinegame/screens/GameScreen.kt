@@ -11,10 +11,11 @@ import com.badlogic.gdx.utils.ScreenUtils
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 import fr.thebrisingers.slotmachinegame.FocusManager
 import fr.thebrisingers.slotmachinegame.FocusTarget
-import fr.thebrisingers.slotmachinegame.data.spell.Target
 import fr.thebrisingers.slotmachinegame.battle.BattleState
 import fr.thebrisingers.slotmachinegame.data.SPIN_PRICE
 import fr.thebrisingers.slotmachinegame.data.gameStatus.TurnPhase
+import fr.thebrisingers.slotmachinegame.data.machine.Machine
+import fr.thebrisingers.slotmachinegame.data.spell.Target
 import fr.thebrisingers.slotmachinegame.inventory.InventoryState
 import fr.thebrisingers.slotmachinegame.machine.MachineState
 import fr.thebrisingers.slotmachinegame.spellBar.SpellBarState
@@ -24,8 +25,8 @@ import ktx.assets.disposeSafely
 class GameScreen : KtxScreen, InputAdapter() {
     private lateinit var machineState: MachineState
     private lateinit var battleState: BattleState
-    private lateinit var spellBarState: SpellBarState
     private lateinit var inventoryState: InventoryState
+    private lateinit var spellBarState: SpellBarState
 
     private lateinit var gameRenderer: GameRenderer
 
@@ -37,16 +38,14 @@ class GameScreen : KtxScreen, InputAdapter() {
     private var rollCoinSound: Sound? = null
     private var backgroundMusic: Music? = null
 
+    private var pendingSpinIncomes: Machine.SpinIncomes? = null // New variable to hold spin results
+
     override fun show() {
         stage = Stage(ScreenViewport())
 
         battleState = BattleState()
         inventoryState = InventoryState()
-        machineState = MachineState({ runes, coinsGained, healGained ->
-            inventoryState.updateCounters(runes)
-            inventoryState.addCoins(coinsGained)
-            battleState.hero.heal(healGained)
-        })
+        machineState = MachineState() // Removed onSpinResult lambda
         spellBarState = SpellBarState()
         focusManager = FocusManager { spellBarState.spells }
 
@@ -87,6 +86,15 @@ class GameScreen : KtxScreen, InputAdapter() {
 
         // On passe l'info au renderer global
         gameRenderer.render(delta, isSpinFocused, currentFocus)
+
+        // Apply spin results after animation is done
+        if (pendingSpinIncomes != null && gameRenderer.machineRenderer.isAnimationDone) {
+            inventoryState.updateCounters(pendingSpinIncomes!!.runes)
+            inventoryState.addCoins(pendingSpinIncomes!!.coins)
+            battleState.hero.heal(pendingSpinIncomes!!.heals)
+            battleState.advanceMonsterTurn()
+            pendingSpinIncomes = null // Reset after applying
+        }
     }
 
     override fun resize(width: Int, height: Int) {
@@ -164,8 +172,8 @@ class GameScreen : KtxScreen, InputAdapter() {
                         }
                     }
 
-                    machineState.spin()
-                    battleState.advanceMonsterTurn()
+                    pendingSpinIncomes = machineState.spin() // Store spin results
+                    // Removed immediate data updates and battleState.advanceMonsterTurn()
                 }
             }
             is FocusTarget.Spell -> {

@@ -32,7 +32,7 @@ class MachineRenderer(
     private val symbolDisplayH = 200f
 
     val decalageX = -56f
-    val decalageY = 32f
+    val decalageY = 36f
     private val rowOffsetX = 57f
     private val rowSpacingY = -11f
     private val maxSpinSymbols = 20
