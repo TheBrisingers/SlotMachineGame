@@ -12,6 +12,7 @@ import fr.thebrisingers.slotmachinegame.data.PANEL_W
 import fr.thebrisingers.slotmachinegame.data.PANEL_X
 import fr.thebrisingers.slotmachinegame.data.PANEL_Y
 import fr.thebrisingers.slotmachinegame.data.SPELLS_H
+import fr.thebrisingers.slotmachinegame.data.SPIN_PRICE
 import fr.thebrisingers.slotmachinegame.data.WORLD_H
 import fr.thebrisingers.slotmachinegame.data.WORLD_W
 import fr.thebrisingers.slotmachinegame.inventory.InventoryState
@@ -23,6 +24,7 @@ class MachineRenderer(
     private val inventoryState: InventoryState,
     private val batch: SpriteBatch,
     private val shapeRenderer: ShapeRenderer,
+    private val font: BitmapFont
 ) {
     private val textureFocused = Texture(Gdx.files.internal("lever/lever_focused.png"))
     private val textureActivation = Texture(Gdx.files.internal("lever/lever_activated.png")) // Nouveau fichier
@@ -36,7 +38,7 @@ class MachineRenderer(
     private val fireRune = Texture(Gdx.files.internal("runes/fire.png"))
     private val waterRune = Texture(Gdx.files.internal("runes/water.png"))
     private val windRune = Texture(Gdx.files.internal("runes/wind.png"))
-
+    private val simpleCoin = Texture(Gdx.files.internal("runes/simple_coin.png"))
     val frameDuration = 0.01f
 
 
@@ -70,8 +72,6 @@ class MachineRenderer(
     private var stateTimeLever = 0f
     private var stateTimeWheel = 0f
     private var isActivating = false
-
-    private val font = BitmapFont()
 
     init {
         // On découpe la feuille (ex: frames de 32x32, à ajuster selon ton PNG)
@@ -112,7 +112,6 @@ class MachineRenderer(
         val runePosDelta = -137 / 68
         val totalDelta = (((runePosDelta * stateTimeLever)/ frameDuration % 137 +1) /2).roundToInt()*2
 
-        println(totalDelta)
         batch.begin()
 
         // Dessin du fond de la roue
@@ -176,16 +175,26 @@ class MachineRenderer(
             }
         }
 
+        font.color = Color.WHITE
+        font.data.setScale(0.4f) // Texte assez petit
+        // On le place 10 pixels sous le levier (posY - 10f)
+        val priceText = "$SPIN_PRICE"
+        font.draw(batch, priceText, posX + 10f, posY - 5f)
+
+        // On dessine l'icône de la pièce juste à côté du chiffre
+        // On ajuste la position Y (-15f) pour que l'icône soit alignée avec le texte
+        batch.draw(simpleCoin, posX + 14f, posY - 14f, 12f, 12f)
+
+
+        font.data.setScale(1f)
         batch.draw(frame, posX, posY, buttonWidth, buttonHeight)
         font.draw(batch, "$coinsValue", coinX, coinY + 3f)
 
         batch.end()
-
     }
 
     fun dispose() {
         textureFocused.disposeSafely()
         textureActivation.disposeSafely()
-        font.disposeSafely()
     }
 }

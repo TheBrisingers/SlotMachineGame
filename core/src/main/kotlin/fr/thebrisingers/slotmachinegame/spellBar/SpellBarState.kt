@@ -21,12 +21,12 @@ class SpellBarState(
             is FocusTarget.Spin -> {
                 title = "Table des Gains"
                 description =
-                    "• Runes : x2 (+1) | x3 (+3)\n" +
-                        "• Soin  : x2 (10%) | x3 (25%)\n" +
-                        "• Pièces: x2 (1.5x) | x3 (3x)\n" +
-                        "• Triple pièces: x2 (3x) | x3 (5x)\n" +
-                        "• Sacs  : x2 (5x) | x3 (10x)\n" +
-                        "• Jokers: x3 (300pièces)\n"
+                    "Runes : x2 (+1) | x3 (+3)\n" +
+                        "Soin  : x2 (10%) | x3 (25%)\n" +
+                        "Pièces: x2 (1.5x) | x3 (3x)\n" +
+                        "Triple pièces: x2 (3x) | x3 (5x)\n" +
+                        "Sacs  : x2 (5x) | x3 (10x)\n" +
+                        "Jokers: x3 (300 pièces)\n"
             }
         }
     }

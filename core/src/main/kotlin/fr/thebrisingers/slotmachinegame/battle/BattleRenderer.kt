@@ -23,6 +23,7 @@ class BattleRenderer(
     private val battleState: BattleState,
     private val batch: SpriteBatch,
     private val shapeRenderer: ShapeRenderer,
+    private val font: BitmapFont
 ) {
     private val combatIcon = Texture(Gdx.files.internal("combat.png"))
     private var currentAnimation: Animation<TextureRegion>
@@ -41,7 +42,6 @@ class BattleRenderer(
 
     private var lastWaveRendered = 1
 
-    private val font = BitmapFont()
     private val layout = GlyphLayout()
 
     var isAnimationDone = true
@@ -386,7 +386,6 @@ class BattleRenderer(
     }
 
     fun dispose() {
-        font.disposeSafely()
         InitHero.dispose()
         InitOrc.dispose()
         InitRogue.dispose()

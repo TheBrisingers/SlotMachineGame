@@ -17,8 +17,8 @@ class SpellBarRenderer(
     private val spellBarState: SpellBarState,
     private val batch: SpriteBatch,
     private val shapeRenderer: ShapeRenderer,
+    private val font: BitmapFont
 ) {
-    private val font = BitmapFont()
     private val paperBackground = Texture(Gdx.files.internal("paper_background2.png"))
 
     // Single element books
@@ -40,6 +40,11 @@ class SpellBarRenderer(
     private val waterSymbol = Texture(Gdx.files.internal("runes/water.png"))
     private val earthSymbol = Texture(Gdx.files.internal("runes/earth.png"))
     private val windSymbol = Texture(Gdx.files.internal("runes/wind.png"))
+    private val healIcon = Texture(Gdx.files.internal("runes/heart.png"))
+    private val simpleCoinIcon = Texture(Gdx.files.internal("runes/simple_coin.png"))
+    private val multiCoinIcon = Texture(Gdx.files.internal("runes/triple_coin.png"))
+    private val bagIcon = Texture(Gdx.files.internal("runes/coin_bag.png"))
+    private val jokerIcon = Texture(Gdx.files.internal("runes/joker.png"))
 
     // Constants for card layout
     private val cardPadding = 5f
@@ -183,50 +188,66 @@ class SpellBarRenderer(
     }
 
     private fun drawDescriptionZone() {
-        // Fond bande du bas
         batch.begin()
-
+        // Dessin du fond
         batch.draw(paperBackground, SPELLS_DESCRIPTION_X, SPELLS_Y, SPELLS_DESCRIPTION_W, SPELLS_H)
-        batch.end()
 
-        batch.begin()
+        val paddingX = 15f
+        val titleY = SPELLS_Y + SPELLS_H - 12f
+        val descriptionTopY = titleY - 22f // Y de départ du texte (le haut du bloc)
+
+        // --- TITRE ---
         font.color = Color.BLACK
-        font.data.setScale(0.6f)
-        // Original positioning for title and description
-        font.draw(
-            batch,
-            spellBarState.title,
-            SPELLS_DESCRIPTION_X + 20f,
-            SPELLS_H - 10f
-        ) // Adjusted Y for better visibility
-        font.data.setScale(0.5f) // Taille plus petite pour la description
-        font.color = Color.BLACK
-        val titleY = SPELLS_Y + SPELLS_H
+        font.data.setScale(0.55f)
+        font.draw(batch, spellBarState.title, SPELLS_DESCRIPTION_X + paddingX, titleY)
 
-        // On définit la zone de texte (Largeur de la zone moins les marges)
-        val descriptionPadding = 15f
-        val maxDescriptionWidth = SPELLS_DESCRIPTION_W - (descriptionPadding * 2)
+        // --- DESCRIPTION ---
+        font.data.setScale(0.38f)
+        val lineH = font.lineHeight // Hauteur d'une ligne de texte
+        val iconSize = 8f
+        val textIndent = 38f // Espace à gauche pour les icônes
+        val iconX = SPELLS_DESCRIPTION_X + paddingX
 
-        // On utilise GlyphLayout pour calculer le texte avec retour à la ligne
-        glyphLayout.setText(
-            font,
-            spellBarState.description,
-            Color.BLACK,
-            maxDescriptionWidth,
-            Align.left,
-            true // active le wrap (retour à la ligne automatique)
-        )
+        if (spellBarState.title == "Table des Gains") {
+            val verticalOffset = (lineH + iconSize) / 2f
 
-        // Dessin du texte calculé, placé 25 pixels sous le titre
-        font.draw(batch, glyphLayout, SPELLS_DESCRIPTION_X + descriptionPadding, titleY - 25f)
+            // Ligne 1 (Index 0) : Les 4 runes côte à côte
+            val firstLineIconY = descriptionTopY - verticalOffset
+            val runes = listOf(fireSymbol, waterSymbol, earthSymbol, windSymbol)
+            val smallRuneSize = 8f
+            runes.forEachIndexed { index, texture ->
+                batch.draw(texture, iconX + (index * 9f), firstLineIconY + 1f, smallRuneSize, smallRuneSize)
+            }
 
-        // Reset de l'échelle à 1 pour ne pas polluer les autres renderers
+            // Lignes suivantes (Index 1 à 5) : Loot unique
+            val otherIcons = listOf(healIcon, simpleCoinIcon, multiCoinIcon, bagIcon, jokerIcon)
+            otherIcons.forEachIndexed { index, texture ->
+                val lineIndex = index + 1
+                // On calcule le Y du haut de la ligne correspondante
+                val lineTopY = descriptionTopY - (lineIndex * lineH) - 6f
+                val iconY = lineTopY + (lineH - iconSize) / 2f
+
+                batch.draw(texture, iconX + 28f, iconY, iconSize, iconSize)
+            }
+
+            // Dessin du texte décalé
+            glyphLayout.setText(font, spellBarState.description, Color.BLACK,
+                SPELLS_DESCRIPTION_W - paddingX - textIndent, Align.left, true)
+            // Le texte se dessine à partir de descriptionTopY (le haut)
+            font.draw(batch, glyphLayout, SPELLS_DESCRIPTION_X + paddingX + textIndent, descriptionTopY)
+
+        } else {
+            // Mode normal pour les sorts
+            glyphLayout.setText(font, spellBarState.description, Color.BLACK,
+                SPELLS_DESCRIPTION_W - (paddingX * 2), Align.left, true)
+            font.draw(batch, glyphLayout, SPELLS_DESCRIPTION_X + paddingX, descriptionTopY)
+        }
+
         font.data.setScale(1f)
         batch.end()
     }
 
     fun dispose() {
-        font.disposeSafely()
         paperBackground.disposeSafely()
         fireBook.disposeSafely()
         waterBook.disposeSafely()
@@ -242,5 +263,10 @@ class SpellBarRenderer(
         waterSymbol.disposeSafely()
         earthSymbol.disposeSafely()
         windSymbol.disposeSafely()
+        healIcon.disposeSafely()
+        simpleCoinIcon.disposeSafely()
+        multiCoinIcon.disposeSafely()
+        bagIcon.disposeSafely()
+        jokerIcon.disposeSafely()
     }
 }

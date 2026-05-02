@@ -15,8 +15,8 @@ class InventoryRenderer(
     private val inventoryState: InventoryState,
     private val batch: SpriteBatch,
     private val shapeRenderer: ShapeRenderer,
+    private val font: BitmapFont
 ) {
-    private val font = BitmapFont()
     private var errorFlashTimer = 0f
 
     // On charge les textures dans une Map
@@ -72,7 +72,6 @@ class InventoryRenderer(
     }
 
     fun dispose() {
-        font.disposeSafely()
         textures.values.forEach { it.disposeSafely() }
     }
 }
