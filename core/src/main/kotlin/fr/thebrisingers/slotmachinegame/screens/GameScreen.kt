@@ -34,6 +34,7 @@ class GameScreen : KtxScreen, InputAdapter() {
     private lateinit var stage: Stage
     private var focusChangeSound: Sound? = null
     private var spellCastSound: Sound? = null
+    private var rollCoinSound: Sound? = null
     private var backgroundMusic: Music? = null
 
     override fun show() {
@@ -64,6 +65,12 @@ class GameScreen : KtxScreen, InputAdapter() {
         val spellSoundFile = Gdx.files.internal("sounds/throw_power.mp3")
         if (spellSoundFile.exists()) spellCastSound = Gdx.audio.newSound(spellSoundFile)
 
+        val rollSoundFile = Gdx.files.internal("sounds/roll_coin.mp3")
+        if (rollSoundFile.exists()) {
+            rollCoinSound = Gdx.audio.newSound(rollSoundFile)
+            gameRenderer.machineRenderer.onSymbolTick = { rollCoinSound?.play(0.6f) }
+        }
+
         val musicFile = Gdx.files.internal("sounds/background_music.mp3")
         if (musicFile.exists()) {
             backgroundMusic = Gdx.audio.newMusic(musicFile)
@@ -91,6 +98,7 @@ class GameScreen : KtxScreen, InputAdapter() {
         stage.disposeSafely()
         focusChangeSound?.disposeSafely()
         spellCastSound?.disposeSafely()
+        rollCoinSound?.disposeSafely()
         backgroundMusic?.stop()
         backgroundMusic?.disposeSafely()
     }

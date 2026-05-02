@@ -69,6 +69,8 @@ class MachineRenderer(
     private var stateTimeLever = 0f
     private var isActivating = false
 
+    var onSymbolTick: (() -> Unit)? = null
+
     data class ReelState(
         var globalFrame: Int = 0,
         var spinTime: Float = 0f,
@@ -138,8 +140,11 @@ class MachineRenderer(
                 reel.spinTime += delta
                 reel.accumulator += delta * spinFramesPerSecond
                 val framesToAdvance = reel.accumulator.toInt()
+                val symbolsBefore = reel.globalFrame / frameCount
                 reel.globalFrame += framesToAdvance
                 reel.accumulator -= framesToAdvance
+                val symbolsAfter = reel.globalFrame / frameCount
+                repeat(symbolsAfter - symbolsBefore) { onSymbolTick?.invoke() }
 
                 if (reel.spinTime >= reel.spinDuration) {
                     val totalFrames = wheels[index].size * frameCount
