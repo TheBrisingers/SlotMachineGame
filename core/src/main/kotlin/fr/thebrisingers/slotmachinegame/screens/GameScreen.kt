@@ -12,7 +12,6 @@ import fr.thebrisingers.slotmachinegame.FocusTarget
 import fr.thebrisingers.slotmachinegame.battle.BattleState
 import fr.thebrisingers.slotmachinegame.inventory.InventoryState
 import fr.thebrisingers.slotmachinegame.machine.MachineState
-import fr.thebrisingers.slotmachinegame.machine.MachineUI
 import fr.thebrisingers.slotmachinegame.spellBar.SpellBarState
 import ktx.app.KtxScreen
 import ktx.assets.disposeSafely
@@ -24,8 +23,6 @@ class GameScreen : KtxScreen, InputAdapter() {
     private lateinit var inventoryState: InventoryState
 
     private lateinit var gameRenderer: GameRenderer
-
-    private lateinit var machineUI: MachineUI
 
     private lateinit var focusManager: FocusManager
 
@@ -44,11 +41,6 @@ class GameScreen : KtxScreen, InputAdapter() {
 
         gameRenderer = GameRenderer(stage, machineState, battleState, inventoryState, spellBarState)
 
-        machineUI = MachineUI(
-            stage = stage,
-            onSpin = { machineState.spin() }
-        )
-
         val multiplexer = InputMultiplexer()
         multiplexer.addProcessor(stage)
         multiplexer.addProcessor(this)
@@ -57,7 +49,10 @@ class GameScreen : KtxScreen, InputAdapter() {
 
     override fun render(delta: Float) {
         ScreenUtils.clear(0.12f, 0.12f, 0.18f, 1f)
-        gameRenderer.render(delta)
+        val isSpinFocused = focusManager.current is FocusTarget.Spin
+
+        // On passe l'info au renderer global
+        gameRenderer.render(delta, isSpinFocused)
     }
 
     override fun resize(width: Int, height: Int) {
@@ -102,7 +97,7 @@ class GameScreen : KtxScreen, InputAdapter() {
     private fun applyAction() {
         when (val target = focusManager.current) {
             is FocusTarget.Spin -> {
-                // TODO lancer l'animation de spin
+                gameRenderer.machineRenderer.triggerActivation()
                 battleState.advanceMonsterTurn()
                 machineState.spin()
             }

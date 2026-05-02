@@ -41,12 +41,12 @@ class GameRenderer(
         viewport.update(Gdx.graphics.width, Gdx.graphics.height, true)
     }
 
-    fun render(delta: Float) {
+    fun render(delta: Float, isLeverFocused: Boolean) {
         batch.projectionMatrix = camera.combined
         shapeRenderer.projectionMatrix = camera.combined
 
         camera.update()
-        machineRenderer.render()
+        machineRenderer.render(delta, isLeverFocused)
         battleRenderer.render(delta)
         inventoryRenderer.render()
         spellBarRenderer.render()
