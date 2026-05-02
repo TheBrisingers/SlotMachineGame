@@ -11,6 +11,8 @@ data class Monster(
     var health: Int = maxHealth
         private set
 
+    val coinReward: Int = (category.baseReward * difficultyMultiplier).toInt().coerceAtLeast(1)
+
     private val attackSpeed: Int = category.attackSpeed + faction.attackSpeedModifier
 
     var turnsUntilNextAttack = attackSpeed

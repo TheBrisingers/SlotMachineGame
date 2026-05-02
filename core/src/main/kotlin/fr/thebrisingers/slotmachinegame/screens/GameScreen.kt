@@ -206,7 +206,8 @@ class GameScreen : KtxScreen, InputAdapter() {
                     inventoryState.consumeResources(spell.cost)
 
                     // 2. Logique de combat
-                    battleState.castSpell(spell)
+                    val coinsFromKills = battleState.castSpell(spell)
+                    if (coinsFromKills > 0) inventoryState.addCoins(coinsFromKills)
 
                     // 3. Animation du héros
                    gameRenderer.battleRenderer.triggerCast(hitIndices.toList())

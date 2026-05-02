@@ -33,9 +33,10 @@ class BattleState {
         }
     }
 
-    fun castSpell(spell: Spell): Boolean {
-        if (phase != TurnPhase.PLAYER_TURN) return false
+    fun castSpell(spell: Spell): Int {
+        if (phase != TurnPhase.PLAYER_TURN) return 0
 
+        var totalCoinsEarned = 0
         phase = TurnPhase.RESOLUTION
         spell.spellEffect.forEach { effect ->
             val aliveMonsters = monsters.filter { it.isAlive }
@@ -47,12 +48,18 @@ class BattleState {
                     Target.SELF -> listOf(hero)
                 }
 
-                target.onEach {
-                    it.takeDamage(effect.value)
+                target.forEach { entity ->
+                    val wasAlive = if (entity is Monster) entity.isAlive else false
+                    entity.takeDamage(effect.value)
+                    
+                    // Si c'était un monstre vivant et qu'il vient de mourir
+                    if (entity is Monster && wasAlive && !entity.isAlive) {
+                        totalCoinsEarned += entity.coinReward
+                    }
                 }
             }
         }
-        return true
+        return totalCoinsEarned
     }
 
     /**
