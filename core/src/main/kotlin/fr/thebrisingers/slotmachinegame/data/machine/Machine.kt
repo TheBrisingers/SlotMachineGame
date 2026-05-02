@@ -1,7 +1,7 @@
 package fr.thebrisingers.slotmachinegame.data.machine
 
 import fr.thebrisingers.slotmachinegame.data.INITIAL_COINS
-import fr.thebrisingers.slotmachinegame.data.SLOT_PRICE
+import fr.thebrisingers.slotmachinegame.data.SPIN_PRICE
 import fr.thebrisingers.slotmachinegame.data.spell.Symbol
 
 class Machine(
@@ -18,24 +18,34 @@ class Machine(
         wheelThree
     )
 
-    fun updateCoins(coinModifier: Int): Boolean {
-        if(currentCoins + coinModifier > SLOT_PRICE) {
-            currentCoins += coinModifier
-            return true
-        } else {
-            return false
-        }
-    }
+    data class SpinIncomes(
+        val runes: List<Pair<Symbol, Int>>,
+        val coins: Int,
+        val heals: Int
+    )
 
-    fun getIncomes(): List<Pair<Symbol, Int>> {
+    fun getIncomes(): SpinIncomes {
         val incomes = listOf(
             spinResult.getFirstRowIncome(),
             spinResult.getSecondRowIncome(),
             spinResult.getThirdRowIncome(),
             spinResult.getFirstDiagonalIncome(),
             spinResult.getSecondDiagonalIncome()
-        )
-        return incomes.filterNotNull()
+        ).filterNotNull()
+
+        val runes = incomes.filter { it.first in listOf(Symbol.EARTH, Symbol.WIND, Symbol.WATER, Symbol.FIRE) }
+
+        val coins = incomes
+            .filter { it.first in listOf(Symbol.SIMPLE_COIN, Symbol.MULTIPLE_COIN, Symbol.COIN_BAG) }
+            .sumOf { it.second }
+
+        val heals = incomes
+            .filter { it.first in listOf(Symbol.HEAL) }
+            .sumOf { it.second }
+
+        return SpinIncomes(runes, coins, heals)
+
+
     }
 
     fun updateSpinResult(wheelOne: List<Symbol>, wheelTwo: List<Symbol>, wheelThree: List<Symbol>){

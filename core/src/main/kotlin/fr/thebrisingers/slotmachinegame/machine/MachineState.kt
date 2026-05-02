@@ -7,7 +7,7 @@ import fr.thebrisingers.slotmachinegame.data.machine.SymbolRect
 import fr.thebrisingers.slotmachinegame.data.spell.Symbol
 import fr.thebrisingers.slotmachinegame.data.toRandomWheelValue
 
-class MachineState(val updateIncomes: (List<Pair<Symbol, Int>>) -> Unit) {
+class MachineState(val onSpinResult: (List<Pair<Symbol, Int>>, Int, Int) -> Unit) {
 
     private val machine = Machine(
         WHEEL_SYMBOL_PROPORTION.toRandomWheelValue(),
@@ -18,7 +18,10 @@ class MachineState(val updateIncomes: (List<Pair<Symbol, Int>>) -> Unit) {
 
     fun spin() {
         machine.shuffleWheels()
-        updateIncomes(machine.getIncomes())
+        val incomes = machine.getIncomes()
+        println(incomes)
+        // On envoie les deux infos à GameScreen
+        onSpinResult(incomes.runes, incomes.coins, incomes.heals)
     }
 }
 

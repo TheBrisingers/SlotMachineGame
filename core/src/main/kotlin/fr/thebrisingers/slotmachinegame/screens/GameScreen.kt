@@ -11,6 +11,7 @@ import fr.thebrisingers.slotmachinegame.FocusManager
 import fr.thebrisingers.slotmachinegame.FocusTarget
 import fr.thebrisingers.slotmachinegame.data.spell.Target
 import fr.thebrisingers.slotmachinegame.battle.BattleState
+import fr.thebrisingers.slotmachinegame.data.SPIN_PRICE
 import fr.thebrisingers.slotmachinegame.inventory.InventoryState
 import fr.thebrisingers.slotmachinegame.machine.MachineState
 import fr.thebrisingers.slotmachinegame.spellBar.SpellBarState
@@ -34,7 +35,11 @@ class GameScreen : KtxScreen, InputAdapter() {
 
         battleState = BattleState()
         inventoryState = InventoryState()
-        machineState = MachineState({ inventoryState.updateCounters(it) })
+        machineState = MachineState({ runes, coinsGained, healGained ->
+            inventoryState.updateCounters(runes)
+            inventoryState.addCoins(coinsGained)
+            battleState.hero.heal(healGained)
+        })
         spellBarState = SpellBarState()
         focusManager = FocusManager { spellBarState.spells }
 
@@ -99,17 +104,20 @@ class GameScreen : KtxScreen, InputAdapter() {
     private fun applyAction() {
         when (val target = focusManager.current) {
             is FocusTarget.Spin -> {
-                gameRenderer.machineRenderer.triggerActivation()
+                if (inventoryState.coins >= SPIN_PRICE) {
+                    inventoryState.spendCoins(SPIN_PRICE)
+                    gameRenderer.machineRenderer.triggerActivation()
 
-                // Déclencher les animations pour chaque monstre qui va attaquer
-                battleState.monsters.forEachIndexed { index, monster ->
-                    if (monster.attackThisTurn) {
-                        gameRenderer.battleRenderer.triggerMonsterAttack(index)
+                    // Déclencher les animations pour chaque monstre qui va attaquer
+                    battleState.monsters.forEachIndexed { index, monster ->
+                        if (monster.attackThisTurn) {
+                            gameRenderer.battleRenderer.triggerMonsterAttack(index)
+                        }
                     }
-                }
 
-                battleState.advanceMonsterTurn()
-                machineState.spin()
+                    machineState.spin()
+                    battleState.advanceMonsterTurn()
+                }
             }
             is FocusTarget.Spell -> {
                 val spell = spellBarState.spells[target.index]

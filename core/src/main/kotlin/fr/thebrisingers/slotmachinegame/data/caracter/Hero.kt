@@ -14,4 +14,10 @@ data class Hero(
     override fun takeDamage(damage: Int) {
         health = (health + damage).coerceIn(0..HERO_MAX_HEALTH)
     }
+
+    fun heal(amount: Int) {
+        if (amount <= 0) return
+        // On soigne sans dépasser le maximum de PV
+        health = (health + amount).coerceAtMost(maxHealth)
+    }
 }

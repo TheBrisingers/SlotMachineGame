@@ -2,6 +2,7 @@ package fr.thebrisingers.slotmachinegame.inventory
 
 import com.badlogic.gdx.math.Rectangle
 import fr.thebrisingers.slotmachinegame.data.COMBAT_X
+import fr.thebrisingers.slotmachinegame.data.INITIAL_COINS
 import fr.thebrisingers.slotmachinegame.data.INVENTORY_H
 import fr.thebrisingers.slotmachinegame.data.INVENTORY_W
 import fr.thebrisingers.slotmachinegame.data.INVENTORY_X
@@ -16,6 +17,7 @@ import fr.thebrisingers.slotmachinegame.data.spell.SpellCost
 import fr.thebrisingers.slotmachinegame.data.spell.Symbol
 import fr.thebrisingers.slotmachinegame.data.spell.Target
 import kotlin.collections.plusAssign
+import kotlin.ranges.coerceAtMost
 
 class InventoryState {
     private val iconSize = 32f
@@ -30,6 +32,7 @@ class InventoryState {
     private val centerX = INVENTORY_X + (INVENTORY_W - iconSize) / 2f
     val missingResources = mutableSetOf<String>()
 
+    var coins = INITIAL_COINS
     val counters = listOf(
         SymbolRect(Symbol.FIRE.name,  Rectangle(centerX, calculateY(3), iconSize, iconSize)),
         SymbolRect(Symbol.WATER.name, Rectangle(centerX, calculateY(2), iconSize, iconSize)),
@@ -52,6 +55,14 @@ class InventoryState {
                 }
             }
         }
+    }
+
+    fun spendCoins(amount: Int) {
+        coins -= amount
+    }
+
+    fun addCoins(amount: Int) {
+        coins += amount
     }
 
     fun canCastSpell(spellCost: SpellCost): Boolean {

@@ -32,7 +32,7 @@ class GameRenderer(
     private val batch = SpriteBatch()
     private val shapeRenderer = ShapeRenderer()
 
-    val machineRenderer = MachineRenderer(machineState, batch, shapeRenderer)
+    val machineRenderer = MachineRenderer(machineState, inventoryState, batch, shapeRenderer)
     val battleRenderer = BattleRenderer(battleState, batch, shapeRenderer)
     val inventoryRenderer = InventoryRenderer(inventoryState, batch, shapeRenderer)
     val spellBarRenderer = SpellBarRenderer(spellBarState, batch, shapeRenderer)

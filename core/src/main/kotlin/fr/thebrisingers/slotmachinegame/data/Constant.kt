@@ -4,20 +4,20 @@ import fr.thebrisingers.slotmachinegame.data.machine.Earning
 import fr.thebrisingers.slotmachinegame.data.spell.Symbol
 import kotlin.math.round
 
-const val SLOT_PRICE = 5
-const val INITIAL_COINS = 30
-const val HERO_MAX_HEALTH = 50
+const val SPIN_PRICE = 5
+const val INITIAL_COINS = 50
+const val HERO_MAX_HEALTH = 100
 
 val FIRE_SYMBOL_EARNING = Earning(1, 3)
 val WATER_SYMBOL_EARNING = Earning(1, 3)
 val EARTH_SYMBOL_EARNING = Earning(1, 3)
 val WIND_SYMBOL_EARNING = Earning(1, 3)
 
-val SIMPLE_COIN_SYMBOL_EARNING = Earning((1.5 * SLOT_PRICE).toInt(), 3 * SLOT_PRICE)
-val MULTIPLE_COIN_SYMBOL_EARNING = Earning(3 * SLOT_PRICE, 5 * SLOT_PRICE)
-val COIN_BAG_SYMBOL_EARNING = Earning(5 * SLOT_PRICE, 10 * SLOT_PRICE)
+val SIMPLE_COIN_SYMBOL_EARNING = Earning((1.5 * SPIN_PRICE).toInt(), 3 * SPIN_PRICE)
+val MULTIPLE_COIN_SYMBOL_EARNING = Earning(3 * SPIN_PRICE, 5 * SPIN_PRICE)
+val COIN_BAG_SYMBOL_EARNING = Earning(5 * SPIN_PRICE, 10 * SPIN_PRICE)
 
-val JOKER_SYMBOL_EARNING = Earning(0, 100 * SLOT_PRICE)
+val JOKER_SYMBOL_EARNING = Earning(0, 100 * SPIN_PRICE)
 
 val HEAL_SYMBOL_EARNING = Earning(round(0.1 * HERO_MAX_HEALTH).toInt(), round(0.25 * HERO_MAX_HEALTH).toInt())
 
