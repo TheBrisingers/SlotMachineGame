@@ -1,7 +1,6 @@
 package fr.thebrisingers.slotmachinegame.data.machine
 
 import fr.thebrisingers.slotmachinegame.data.INITIAL_COINS
-import fr.thebrisingers.slotmachinegame.data.SPIN_PRICE
 import fr.thebrisingers.slotmachinegame.data.spell.Symbol
 
 class Machine(
@@ -44,8 +43,6 @@ class Machine(
             .sumOf { it.second }
 
         return SpinIncomes(runes, coins, heals)
-
-
     }
 
     fun updateSpinResult(wheelOne: List<Symbol>, wheelTwo: List<Symbol>, wheelThree: List<Symbol>){

@@ -8,9 +8,11 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import fr.thebrisingers.slotmachinegame.data.PANEL_W
 import fr.thebrisingers.slotmachinegame.data.PANEL_X
 import fr.thebrisingers.slotmachinegame.data.PANEL_Y
 import fr.thebrisingers.slotmachinegame.data.SPELLS_H
+import fr.thebrisingers.slotmachinegame.data.WORLD_H
 import fr.thebrisingers.slotmachinegame.data.WORLD_W
 import fr.thebrisingers.slotmachinegame.inventory.InventoryState
 import ktx.assets.disposeSafely
@@ -101,6 +103,8 @@ class MachineRenderer(
         val gap = 15f
         val posX = WORLD_W - buttonWidth - gap
         val posY = SPELLS_H + 45f
+        val coinX = PANEL_X + PANEL_W / 2 - 8f
+        val coinY = WORLD_H - 25f
 
         stateTimeLever += delta
         stateTimeWheel += delta
@@ -173,7 +177,7 @@ class MachineRenderer(
         }
 
         batch.draw(frame, posX, posY, buttonWidth, buttonHeight)
-        font.draw(batch, "$coinsValue", posX, posY + 3f)
+        font.draw(batch, "$coinsValue", coinX, coinY + 3f)
 
         batch.end()
 

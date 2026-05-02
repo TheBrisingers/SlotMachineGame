@@ -191,7 +191,7 @@ class SpellBarRenderer(
 
         batch.begin()
         font.color = Color.BLACK
-        font.data.setScale(0.7f)
+        font.data.setScale(0.6f)
         // Original positioning for title and description
         font.draw(
             batch,
@@ -201,7 +201,7 @@ class SpellBarRenderer(
         ) // Adjusted Y for better visibility
         font.data.setScale(0.5f) // Taille plus petite pour la description
         font.color = Color.BLACK
-        val titleY = SPELLS_Y + SPELLS_H - 10f
+        val titleY = SPELLS_Y + SPELLS_H
 
         // On définit la zone de texte (Largeur de la zone moins les marges)
         val descriptionPadding = 15f
