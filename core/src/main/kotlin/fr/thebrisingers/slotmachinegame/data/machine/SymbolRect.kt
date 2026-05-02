@@ -5,5 +5,5 @@ import com.badlogic.gdx.math.Rectangle
 data class SymbolRect(
     val title: String,
     val zone: Rectangle,
-    var value: Int = 200
+    var value: Int = 0
 )
