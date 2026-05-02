@@ -38,9 +38,11 @@ class GameScreen : KtxScreen, InputAdapter() {
         inventoryState = InventoryState()
         machineState = MachineState({ inventoryState.updateCounters(it) })
         spellBarState = SpellBarState()
-        focusManager = FocusManager({ spellBarState.spells })
+        focusManager = FocusManager { spellBarState.spells }
 
-        gameRenderer = GameRenderer(stage, machineState, battleState, inventoryState)
+        spellBarState.updateDescription(focusManager.current)
+
+        gameRenderer = GameRenderer(stage, machineState, battleState, inventoryState, spellBarState)
 
         machineUI = MachineUI(
             stage = stage,
@@ -94,6 +96,7 @@ class GameScreen : KtxScreen, InputAdapter() {
 
     private fun changeFocus() {
         focusManager.next()
+        spellBarState.updateDescription(focusManager.current)
     }
 
     private fun applyAction() {

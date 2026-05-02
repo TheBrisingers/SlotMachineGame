@@ -67,7 +67,10 @@ const val INVENTORY_Y = COMBAT_Y
 // Bande sorts
 const val SPELLS_X = 0f
 const val SPELLS_Y = 0f
-const val SPELLS_W = WORLD_W      // 1280f — pleine largeur
+const val SPELLS_W = 2 * WORLD_W / 3      // 1280f — pleine largeur
+const val SPELLS_DESCRIPTION_X = SPELLS_W
+const val SPELLS_DESCRIPTION_W = WORLD_W - SPELLS_W
+
 
 const val FLOOR_Y = 32f
 const val PADDING_BATTLES = 12f
