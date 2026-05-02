@@ -8,7 +8,12 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import fr.thebrisingers.slotmachinegame.battle.init.InitHero
+import fr.thebrisingers.slotmachinegame.battle.init.InitOrc
+import fr.thebrisingers.slotmachinegame.battle.init.InitRogue
+import fr.thebrisingers.slotmachinegame.battle.init.InitSkeleton
 import fr.thebrisingers.slotmachinegame.data.*
+import fr.thebrisingers.slotmachinegame.data.caracter.Faction
 import ktx.assets.disposeSafely
 
 class BattleRenderer(
@@ -16,14 +21,12 @@ class BattleRenderer(
     private val batch: SpriteBatch,
     private val shapeRenderer: ShapeRenderer,
 ) {
-    private val idleAnimation: Animation<TextureRegion>
-    private val attackAnimation: Animation<TextureRegion>
-    private val getHitAnimation: Animation<TextureRegion>
-    private val deathAnimation: Animation<TextureRegion>
-
     private var currentAnimation: Animation<TextureRegion>
+    private var stateTime = 0f
 
-    private var stateTime = 0f // Le chrono de l'animation
+    // Mapping pour associer une Faction à son set d'animations
+    private val monsterAnimations = mutableMapOf<Faction, Animation<TextureRegion>>()
+    private val monsterStateTimes = FloatArray(3)
 
     private val font = BitmapFont()
 
@@ -33,6 +36,22 @@ class BattleRenderer(
     // MAYBE
     //private var monsterOffsetList = ENEMY_Y_OFFSET.shuffled()
 
+    init {
+        // Initialisation du héros
+        currentAnimation = InitHero.idleAnimation
+
+        // Initialisation des monstres : on lie la Faction à l'animation Idle de l'objet correspondant
+        // (On utilise les objets Init que tu as déjà créés)
+        monsterAnimations[Faction.SKELETON] = InitSkeleton.idleAnimation
+        monsterAnimations[Faction.ZOMBIE] = InitRogue.idleAnimation
+        monsterAnimations[Faction.GOBLIN] = InitOrc.idleAnimation
+
+        // Optionnel : décaler le temps de départ des monstres pour qu'ils ne bougent pas tous en même temps
+        for (i in monsterStateTimes.indices) {
+            monsterStateTimes[i] = (0..100).random() / 100f
+        }
+    }
+
     // 2. Fonction pour changer d'animation depuis l'extérieur (ex: quand on lance un sort)
     fun playAnimation(newAnim: Animation<TextureRegion>) {
         currentAnimation = newAnim
@@ -41,19 +60,46 @@ class BattleRenderer(
 
     fun render(delta: Float) {
         stateTime += delta
+        for (i in monsterStateTimes.indices) {
+            monsterStateTimes[i] += delta
+        }
 
-        // 3. Logique de retour à l'IDLE
-        // Si l'animation actuelle n'est pas l'idle ET qu'elle est terminée
-        if (currentAnimation != idleAnimation && currentAnimation.isAnimationFinished(stateTime)) {
-            currentAnimation = idleAnimation
+        // Logique de retour à l'IDLE pour le héros
+        if (currentAnimation != InitHero.idleAnimation && currentAnimation.isAnimationFinished(stateTime)) {
+            currentAnimation = InitHero.idleAnimation
             stateTime = 0f
         }
 
-        isAnimationDone = false
+        // Mise à jour du flag d'animation terminée
+        isAnimationDone = currentAnimation.isAnimationFinished(stateTime)
 
-        drawCombatZone()
-        drawHeroAnimation()
-        isAnimationDone = true
+        drawCombatZone()       // 1. Fond et HP
+        drawMonsterAnimations() // 2. Monstres
+        drawHeroAnimation()    // 3. Héros (par dessus)
+    }
+
+
+    private fun drawMonsterAnimations() {
+        batch.begin()
+        battleState.monsters.forEachIndexed { i, monster ->
+            if (monster.isAlive) {
+                // On récupère l'animation correspondant à la faction du monstre
+                val anim = monsterAnimations[monster.faction]
+                val time = monsterStateTimes[i]
+
+                if (anim != null) {
+                    val currentFrame = anim.getKeyFrame(time)
+                    val x = ENEMY_START_X + i * (ENEMY_W + ENEMY_GAP)
+
+                    batch.draw(
+                        currentFrame,
+                        x, ENEMY_Y,
+                        ENEMY_W, ENEMY_H
+                    )
+                }
+            }
+        }
+        batch.end()
     }
 
     private fun drawHeroAnimation() {
@@ -66,85 +112,48 @@ class BattleRenderer(
         batch.end()
     }
 
-
     private fun drawCombatZone() {
-        // Fond de la zone
+        // 1. Dessin des formes (Fonds)
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+
+        // Fond de la zone de combat
         shapeRenderer.color = Color(0.08f, 0.08f, 0.14f, 1f)
         shapeRenderer.rect(COMBAT_X, COMBAT_Y, COMBAT_W, COMBAT_H)
+
         shapeRenderer.end()
 
-        // Séparateur vertical
+        // 2. Séparateur
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
         shapeRenderer.color = Color.DARK_GRAY
         shapeRenderer.line(COMBAT_W, COMBAT_Y, COMBAT_W, COMBAT_Y + COMBAT_H)
         shapeRenderer.end()
 
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        // Ennemis (alignés à gauche dans la zone)
-        battleState.monsters.forEachIndexed { i, monster ->
-            shapeRenderer.color = Color.WHITE
-            shapeRenderer.rect(
-                ENEMY_START_X + i * (ENEMY_W + ENEMY_GAP),
-                ENEMY_Y /*+ monsterOffsetList[i]*/,
-                ENEMY_W,
-                ENEMY_H
-            )
-        }
-        shapeRenderer.end()
-
+        // 3. Dessin des textes (HP)
         batch.begin()
-        // HP mage
-        font.draw(batch, "HP: ${battleState.hero.health}", MAGE_X, MAGE_Y + MAGE_H)
+        font.color = Color.WHITE
 
-        // HP bars ennemis
+        // HP mage
+        font.draw(batch, "HP: ${battleState.hero.health}", MAGE_X, MAGE_Y + MAGE_H + 20f)
+
+        // HP ennemis
         battleState.monsters.forEachIndexed { i, monster ->
-            font.draw(
-                batch,
-                "${monster.health}/${monster.maxHealth}",
-                ENEMY_START_X + i * (ENEMY_W + ENEMY_GAP),
-                ENEMY_Y + ENEMY_H, /*+ monsterOffsetList[i]*/
-            )
+            if (monster.isAlive) {
+                font.draw(
+                    batch,
+                    "${monster.health}/${monster.maxHealth}",
+                    ENEMY_START_X + i * (ENEMY_W + ENEMY_GAP),
+                    ENEMY_Y + ENEMY_H + 20f
+                )
+            }
         }
         batch.end()
     }
 
     fun dispose() {
         font.disposeSafely()
-        playerIdleSheet.disposeSafely()
-        playerDeathSheet.disposeSafely()
-        playerGetItSheet.disposeSafely()
-        playerAttackSheet.disposeSafely()
-    }
-
-    // Hero Sheets
-    private val playerIdleSheet = Texture(Gdx.files.internal("hero/Player_StandBy.png"))
-    private val playerDeathSheet = Texture(Gdx.files.internal("hero/Player_Death.png"))
-    private val playerGetItSheet = Texture(Gdx.files.internal("hero/Player_get_hit.png"))
-    private val playerAttackSheet = Texture(Gdx.files.internal("hero/Player_attack.png"))
-
-    init {
-        // IDLE
-        val idleFrames = TextureRegion.split(playerIdleSheet, 24, 24)[0]
-        idleAnimation = Animation(0.1f, *idleFrames)
-        idleAnimation.playMode = Animation.PlayMode.LOOP
-
-        // ATTAQUE (Cast)
-        val attackFrames = TextureRegion.split(playerAttackSheet, 24, 24)[0]
-        attackAnimation = Animation(0.08f, *attackFrames) // Un peu plus rapide
-        attackAnimation.playMode = Animation.PlayMode.NORMAL
-
-        // GET HIT
-        val hitFrames = TextureRegion.split(playerGetItSheet, 24, 24)[0]
-        getHitAnimation = Animation(0.1f, *hitFrames)
-        getHitAnimation.playMode = Animation.PlayMode.NORMAL
-
-        // DEATH
-        val deathFrames = TextureRegion.split(playerDeathSheet, 24, 24)[0]
-        deathAnimation = Animation(0.15f, *deathFrames)
-        deathAnimation.playMode = Animation.PlayMode.NORMAL
-
-        // Par défaut
-        currentAnimation = idleAnimation
+        InitHero.dispose()
+        InitOrc.dispose()
+        InitRogue.dispose()
+        InitSkeleton.dispose()
     }
 }
