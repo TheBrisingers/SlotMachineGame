@@ -45,6 +45,7 @@ class SpellBarRenderer(
     private val multiCoinIcon = Texture(Gdx.files.internal("runes/triple_coin.png"))
     private val bagIcon = Texture(Gdx.files.internal("runes/coin_bag.png"))
     private val jokerIcon = Texture(Gdx.files.internal("runes/joker.png"))
+    private val background = Texture(Gdx.files.internal("background_fix.png"))
 
     // Constants for card layout
     private val cardPadding = 5f
@@ -87,6 +88,9 @@ class SpellBarRenderer(
 
 
     fun render(currentFocus: FocusTarget) {
+        batch.begin()
+        batch.draw(background, 0f, 0f,WORLD_W,99f)
+        batch.end()
         drawSpellsZone(currentFocus)
         drawDescriptionZone()
     }
