@@ -24,20 +24,24 @@ class BattleState {
 
     fun castSpell(spell: Spell): Boolean {
         if (phase != TurnPhase.PLAYER_TURN) return false
+
+        phase = TurnPhase.RESOLUTION
         spell.spellEffect.forEach { effect ->
             val aliveMonsters = monsters.filter { it.isAlive }
-            val target: List<Entity> = when (effect.target) {
-                Target.FRONT -> aliveMonsters.subList(0, 1)
-                Target.BACK -> aliveMonsters.subList(aliveMonsters.size - 1, aliveMonsters.size)
-                Target.ALL -> aliveMonsters
-                Target.SELF -> listOf(hero)
-            }
+            if (aliveMonsters.isNotEmpty()) {
+                val target: List<Entity> = when (effect.target) {
+                    Target.FRONT -> aliveMonsters.subList(0, 1)
+                    Target.BACK -> aliveMonsters.subList(aliveMonsters.size - 1, aliveMonsters.size)
+                    Target.ALL -> aliveMonsters
+                    Target.SELF -> listOf(hero)
+                }
 
-            target.onEach {
-                it.takeDamage(effect.value)
+                target.onEach {
+                    it.takeDamage(effect.value)
+                }
             }
         }
-        phase = TurnPhase.RESOLUTION
+        checkBattleStatus()
         return true
     }
 
