@@ -94,6 +94,12 @@ class GameScreen : KtxScreen, InputAdapter() {
             battleState.hero.heal(pendingSpinIncomes!!.heals)
             battleState.advanceMonsterTurn()
             pendingSpinIncomes = null // Reset after applying
+
+            val canSpin = inventoryState.coins >= SPIN_PRICE
+            val canCastAnySpell = spellBarState.spells.any { spell ->
+                inventoryState.canCastSpell(spell.cost)
+            }
+            battleState.checkBattleStatus(canSpin, canCastAnySpell)
         }
     }
 
@@ -112,7 +118,7 @@ class GameScreen : KtxScreen, InputAdapter() {
     }
 
     private var spaceHoldStartTime = 0L
-    private val holdThresholdMs = 500L // seuil hold = 500ms
+    private val holdThresholdMs = 250L // seuil hold = 500ms
 
     override fun keyDown(keycode: Int): Boolean {
         if (battleState.phase != TurnPhase.PLAYER_TURN) return false
@@ -205,6 +211,12 @@ class GameScreen : KtxScreen, InputAdapter() {
                     // 3. Animation du héros
                    gameRenderer.battleRenderer.triggerCast(hitIndices.toList())
                     spellCastSound?.play(3f)
+
+                    val canSpin = inventoryState.coins >= SPIN_PRICE
+                    val canCastAnySpell = spellBarState.spells.any { s ->
+                        inventoryState.canCastSpell(s.cost)
+                    }
+                    battleState.checkBattleStatus(canSpin, canCastAnySpell)
                 } else {
                     gameRenderer.inventoryRenderer.triggerErrorFlash()
 

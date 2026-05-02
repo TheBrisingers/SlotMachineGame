@@ -5,7 +5,7 @@ import fr.thebrisingers.slotmachinegame.data.spell.Symbol
 import kotlin.math.round
 
 const val SPIN_PRICE = 5
-const val INITIAL_COINS = 50
+const val INITIAL_COINS = 5
 const val HERO_MAX_HEALTH = 50
 
 const val MAX_WAVES = 5

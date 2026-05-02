@@ -2,6 +2,7 @@ package fr.thebrisingers.slotmachinegame.battle
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.*
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
@@ -12,7 +13,6 @@ import fr.thebrisingers.slotmachinegame.battle.init.InitSkeleton
 import fr.thebrisingers.slotmachinegame.data.*
 import fr.thebrisingers.slotmachinegame.data.caracter.Faction
 import fr.thebrisingers.slotmachinegame.data.gameStatus.TurnPhase
-import ktx.app.clearScreen
 import ktx.assets.disposeSafely
 
 class BattleRenderer(
@@ -137,10 +137,6 @@ class BattleRenderer(
         drawCombatZone()       // 1. Fond et HP
         drawMonsterAnimations() // 2. Monstres
         drawHeroAnimation()    // 3. Héros (par dessus)
-
-        if (battleState.phase == TurnPhase.VICTORY || battleState.phase == TurnPhase.GAME_OVER) {
-            drawEndScreen()
-        }
     }
 
 
@@ -190,36 +186,6 @@ class BattleRenderer(
             }
         }
         batch.end()
-    }
-
-    private fun drawEndScreen() {
-        clearScreen(0f,0f,0f)
-        // 1. Dessiner un voile sombre sur tout l'écran
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.color = Color(0f, 0f, 0f, 0.7f) // Noir transparent
-        shapeRenderer.rect(0f, 0f, WORLD_W, WORLD_H)
-        shapeRenderer.end()
-
-        batch.begin()
-        font.data.setScale(1.5f)
-
-        val isVictory = battleState.phase == TurnPhase.VICTORY
-        font.color = if (isVictory) Color.GOLD else Color.RED
-
-        val message = if (isVictory) "VICTOIRE !" else "GAME OVER"
-
-        val layout = GlyphLayout(font, message)
-        font.draw(batch, message, (WORLD_W - layout.width) / 2, (WORLD_H + layout.height) / 2)
-
-        font.data.setScale(0.6f)
-        font.color = Color.WHITE
-        val subMessage =
-            if (isVictory) "Vous avez triomphé des $MAX_WAVES vagues" else "Le mage a succombé..."
-        val subLayout = GlyphLayout(font, subMessage)
-        font.draw(batch, subMessage, (WORLD_W - subLayout.width) / 2, (WORLD_H / 2) - 40f)
-
-        batch.end()
-        font.data.setScale(1f) // Reset
     }
 
     private fun getHitAnim(faction: Faction) = when(faction) {
@@ -346,10 +312,13 @@ class BattleRenderer(
         val phase = battleState.phase
         if (phase == TurnPhase.VICTORY || phase == TurnPhase.GAME_OVER) {
             // 1. Voile sombre
+            Gdx.gl.glEnable(GL20.GL_BLEND)
+            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
             shapeRenderer.color = Color(0f, 0f, 0f, 0.75f)
             shapeRenderer.rect(0f, 0f, WORLD_W, WORLD_H)
             shapeRenderer.end()
+            Gdx.gl.glDisable(GL20.GL_BLEND)
 
             batch.begin()
             val isVictory = phase == TurnPhase.VICTORY

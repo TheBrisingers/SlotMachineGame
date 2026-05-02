@@ -52,7 +52,6 @@ class BattleState {
                 }
             }
         }
-        checkBattleStatus()
         return true
     }
 
@@ -74,10 +73,9 @@ class BattleState {
                 monster.resetTurnsUntilNextAttack()
             }
         }
-        checkBattleStatus()
     }
 
-    fun checkBattleStatus() {
+    fun checkBattleStatus(canPlayerSpin: Boolean, canPlayerCastAnySpell: Boolean) {
         phase = when {
             !hero.isAlive -> TurnPhase.GAME_OVER
             monsters.none { it.isAlive } -> {
@@ -88,6 +86,8 @@ class BattleState {
                     TurnPhase.PLAYER_TURN
                 }
             }
+            // New game over condition: no spin and no spells
+            !canPlayerSpin && !canPlayerCastAnySpell -> TurnPhase.GAME_OVER
             else -> TurnPhase.PLAYER_TURN
         }
     }
