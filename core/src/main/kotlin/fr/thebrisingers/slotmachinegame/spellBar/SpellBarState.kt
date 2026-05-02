@@ -14,8 +14,9 @@ class SpellBarState(
     fun updateDescription(target: FocusTarget) {
         when(target){
             is FocusTarget.Spell -> {
-                title = spellCollection[target.index].name
-                description = spellCollection[target.index].description
+                val selectedSpell = spells[target.index]
+                title = selectedSpell.name
+                description = selectedSpell.description
             }
             is FocusTarget.Spin -> {
                 title = "Les lots :"

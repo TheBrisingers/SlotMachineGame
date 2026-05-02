@@ -197,6 +197,7 @@ class SpellBarRenderer(
 
         batch.begin()
         font.color = Color.BLACK
+        font.data.setScale(0.7f)
         // Original positioning for title and description
         font.draw(
             batch,
@@ -204,7 +205,29 @@ class SpellBarRenderer(
             SPELLS_DESCRIPTION_X + 10f,
             SPELLS_H - 10f
         ) // Adjusted Y for better visibility
-        font.draw(batch, spellBarState.description, SPELLS_DESCRIPTION_X + 10f, SPELLS_H - 40f) // Adjusted Y
+        font.data.setScale(0.5f) // Taille plus petite pour la description
+        font.color = Color.BLACK
+        val titleY = SPELLS_Y + SPELLS_H - 10f
+
+        // On définit la zone de texte (Largeur de la zone moins les marges)
+        val descriptionPadding = 15f
+        val maxDescriptionWidth = SPELLS_DESCRIPTION_W - (descriptionPadding * 2)
+
+        // On utilise GlyphLayout pour calculer le texte avec retour à la ligne
+        glyphLayout.setText(
+            font,
+            spellBarState.description,
+            Color.BLACK,
+            maxDescriptionWidth,
+            Align.left,
+            true // active le wrap (retour à la ligne automatique)
+        )
+
+        // Dessin du texte calculé, placé 25 pixels sous le titre
+        font.draw(batch, glyphLayout, SPELLS_DESCRIPTION_X + descriptionPadding, titleY - 25f)
+
+        // Reset de l'échelle à 1 pour ne pas polluer les autres renderers
+        font.data.setScale(1f)
         batch.end()
     }
 

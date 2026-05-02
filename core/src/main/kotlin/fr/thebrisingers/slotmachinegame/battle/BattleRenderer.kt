@@ -128,6 +128,22 @@ class BattleRenderer(
         shapeRenderer.color = Color(0.08f, 0.08f, 0.14f, 1f)
         shapeRenderer.rect(COMBAT_X, COMBAT_Y, COMBAT_W, COMBAT_H)
 
+        // 2. Dessin des barres de vie
+        val barWidth = 40f
+        val barHeight = 6f
+
+        // Barre HP Hero
+        drawHealthBar(MAGE_X + (MAGE_W - barWidth) / 2f, MAGE_Y + MAGE_H + 10f,
+            battleState.hero.health, battleState.hero.maxHealth, barWidth, barHeight)
+
+        // Barres HP Monstres
+        battleState.monsters.forEachIndexed { i, monster ->
+            if (monster.isAlive) {
+                val x = ENEMY_START_X + i * (ENEMY_W + ENEMY_GAP) + (ENEMY_W - barWidth) / 2f
+                drawHealthBar(x, ENEMY_Y + ENEMY_H + 10f,
+                    monster.health, monster.maxHealth, barWidth, barHeight)
+            }
+        }
         shapeRenderer.end()
 
         // 2. Séparateur
@@ -139,9 +155,10 @@ class BattleRenderer(
         // 3. Dessin des textes (HP)
         batch.begin()
         font.color = Color.WHITE
+        font.data.setScale(0.4f)
 
         // HP mage
-        font.draw(batch, "HP: ${battleState.hero.health}", MAGE_X, MAGE_Y + MAGE_H + 20f)
+        font.draw(batch, "${battleState.hero.health}/${battleState.hero.maxHealth}", MAGE_X + 10f, MAGE_Y + MAGE_H + 16f)
 
         // HP ennemis
         battleState.monsters.forEachIndexed { i, monster ->
@@ -149,12 +166,33 @@ class BattleRenderer(
                 font.draw(
                     batch,
                     "${monster.health}/${monster.maxHealth}",
-                    ENEMY_START_X + i * (ENEMY_W + ENEMY_GAP),
-                    ENEMY_Y + ENEMY_H + 20f
+                    ENEMY_START_X + i * (ENEMY_W + ENEMY_GAP) + 10f,
+                    ENEMY_Y + ENEMY_H + 16f
                 )
             }
         }
         batch.end()
+    }
+
+    /**
+     * Fonction utilitaire pour dessiner une barre de vie
+     */
+    private fun drawHealthBar(x: Float, y: Float, current: Int, max: Int, width: Float, height: Float) {
+        // Fond de la barre (Gris foncé / Noir)
+        shapeRenderer.color = Color.BLACK
+        shapeRenderer.rect(x, y, width, height)
+
+        // Calcul du remplissage
+        val percent = current.toFloat() / max.toFloat()
+
+        // Couleur : Vert si > 50%, Jaune si > 25%, Rouge sinon
+        shapeRenderer.color = when {
+            percent > 0.5f -> Color.GREEN
+            percent > 0.25f -> Color.YELLOW
+            else -> Color.RED
+        }
+
+        shapeRenderer.rect(x, y, width * percent, height)
     }
 
     fun dispose() {
