@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.InputMultiplexer
+import com.badlogic.gdx.audio.Sound
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.ScreenUtils
 import com.badlogic.gdx.utils.viewport.ScreenViewport
@@ -30,6 +31,7 @@ class GameScreen : KtxScreen, InputAdapter() {
     private lateinit var focusManager: FocusManager
 
     private lateinit var stage: Stage
+    private var focusChangeSound: Sound? = null
 
     override fun show() {
         stage = Stage(ScreenViewport())
@@ -52,6 +54,9 @@ class GameScreen : KtxScreen, InputAdapter() {
         multiplexer.addProcessor(stage)
         multiplexer.addProcessor(this)
         Gdx.input.inputProcessor = multiplexer
+
+        val soundFile = Gdx.files.internal("sounds/switch_focus.mp3")
+        if (soundFile.exists()) focusChangeSound = Gdx.audio.newSound(soundFile)
     }
 
     override fun render(delta: Float) {
@@ -70,6 +75,7 @@ class GameScreen : KtxScreen, InputAdapter() {
     override fun dispose() {
         gameRenderer.dispose()
         stage.disposeSafely()
+        focusChangeSound?.disposeSafely()
     }
 
     private var spaceHoldStartTime = 0L
@@ -111,6 +117,7 @@ class GameScreen : KtxScreen, InputAdapter() {
     private fun changeFocus() {
         focusManager.next()
         spellBarState.updateDescription(focusManager.current)
+        focusChangeSound?.play()
     }
 
     private fun applyAction() {
