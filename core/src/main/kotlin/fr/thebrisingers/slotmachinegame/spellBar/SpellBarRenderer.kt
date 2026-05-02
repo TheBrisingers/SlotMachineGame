@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.utils.Align
+import fr.thebrisingers.slotmachinegame.FocusTarget
 import fr.thebrisingers.slotmachinegame.data.*
 import fr.thebrisingers.slotmachinegame.data.spell.SpellCost
 import ktx.assets.disposeSafely
@@ -80,12 +81,12 @@ class SpellBarRenderer(
     private val cardHeight = mainBookIconSize + titleAreaHeight + costAreaHeight + cardPadding
 
 
-    fun render() {
-        drawSpellsZone()
+    fun render(currentFocus: FocusTarget) {
+        drawSpellsZone(currentFocus)
         drawDescriptionZone()
     }
 
-    private fun drawSpellsZone() {
+    private fun drawSpellsZone(currentFocus: FocusTarget) {
         batch.begin()
         val nbSpells = spellBarState.spells.size
 
@@ -99,6 +100,21 @@ class SpellBarRenderer(
             spellBarState.spells.forEachIndexed { i, spell ->
                 val cardX = SPELLS_X + i * (spaceBetweenCards + cardWidth) + spaceBetweenCards
                 val cardY = SPELLS_Y + (SPELLS_H - cardHeight) / 2 // Center vertically within SPELLS_H
+
+                if (currentFocus is FocusTarget.Spell && currentFocus.index == i) {
+                    batch.end() // On suspend le batch pour utiliser le shapeRenderer
+
+                    shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
+                    // On utilise une couleur Or moins agressive que Orange
+                    shapeRenderer.color = Color(1f, 0.84f, 0f, 1f)
+
+                    // On dessine un rectangle aux bords arrondis (si possible) ou simple
+                    // Gdx.gl.glLineWidth(2f) // Optionnel : épaissir un peu
+                    shapeRenderer.rect(cardX - 1f, cardY - 1f, cardWidth + 2f, cardHeight + 2f)
+                    shapeRenderer.end()
+
+                    batch.begin() // On reprend le batch
+                }
 
                 // Draw paper background for the card
                 batch.draw(paperBackground, cardX, cardY, cardWidth, cardHeight)

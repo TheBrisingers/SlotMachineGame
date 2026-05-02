@@ -28,6 +28,7 @@ class InventoryState {
     // On calcule le point de départ Y pour que le groupe soit centré verticalement
     private val startY = INVENTORY_Y + (INVENTORY_H - totalGroupHeight) / 2f
     private val centerX = INVENTORY_X + (INVENTORY_W - iconSize) / 2f
+    val missingResources = mutableSetOf<String>()
 
     val counters = listOf(
         SymbolRect(Symbol.FIRE.name,  Rectangle(centerX, calculateY(3), iconSize, iconSize)),
@@ -54,11 +55,17 @@ class InventoryState {
     }
 
     fun canCastSpell(spellCost: SpellCost): Boolean {
-        // .all vérifie que pour chaque symbole, on a assez de ressources
-        return spellCost.spellCostMap.all { (symbol, requiredAmount) ->
+        missingResources.clear() // On réinitialise à chaque vérification
+        var canCast = true
+
+        spellCost.spellCostMap.forEach { (symbol, requiredAmount) ->
             val currentAmount = counters.find { it.title == symbol.name }?.value ?: 0
-            currentAmount >= requiredAmount
+            if (currentAmount < requiredAmount) {
+                missingResources.add(symbol.name)
+                canCast = false
+            }
         }
+        return canCast
     }
 
     fun consumeResources(spellCost: SpellCost) {

@@ -49,10 +49,11 @@ class GameScreen : KtxScreen, InputAdapter() {
 
     override fun render(delta: Float) {
         ScreenUtils.clear(0.12f, 0.12f, 0.18f, 1f)
-        val isSpinFocused = focusManager.current is FocusTarget.Spin
+        val currentFocus = focusManager.current
+        val isSpinFocused = currentFocus is FocusTarget.Spin
 
         // On passe l'info au renderer global
-        gameRenderer.render(delta, isSpinFocused)
+        gameRenderer.render(delta, isSpinFocused, currentFocus)
     }
 
     override fun resize(width: Int, height: Int) {
@@ -103,11 +104,23 @@ class GameScreen : KtxScreen, InputAdapter() {
             }
             is FocusTarget.Spell -> {
                 val spell = spellBarState.spells[target.index]
-                // TODO check si possible de lancer le sort
-                if (true) {
+                // Vérification des ressources
+                if (inventoryState.canCastSpell(spell.cost)) {
+                    // 1. Consommation
+                    inventoryState.consumeResources(spell.cost)
+
+                    // 2. Logique de combat
                     battleState.castSpell(spell)
+
+                    // 3. Animation du héros
+//                    gameRenderer.battleRenderer.triggerCast()
+
+                    // 4. Tour des monstres
+                    battleState.advanceMonsterTurn()
                 } else {
-                    // TODO faire une animation pour dire que pas lancable
+                    gameRenderer.inventoryRenderer.triggerErrorFlash()
+
+                    println("Pas assez de ressources pour ${spell.name}")
                 }
             }
         }

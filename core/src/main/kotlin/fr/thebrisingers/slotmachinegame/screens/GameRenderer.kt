@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.viewport.FitViewport
+import fr.thebrisingers.slotmachinegame.FocusTarget
 import fr.thebrisingers.slotmachinegame.battle.BattleRenderer
 import fr.thebrisingers.slotmachinegame.battle.BattleState
 import fr.thebrisingers.slotmachinegame.data.WORLD_H
@@ -41,15 +42,15 @@ class GameRenderer(
         viewport.update(Gdx.graphics.width, Gdx.graphics.height, true)
     }
 
-    fun render(delta: Float, isLeverFocused: Boolean) {
+    fun render(delta: Float, isLeverFocused: Boolean, currentFocus: FocusTarget) {
         batch.projectionMatrix = camera.combined
         shapeRenderer.projectionMatrix = camera.combined
 
         camera.update()
         machineRenderer.render(delta, isLeverFocused)
         battleRenderer.render(delta)
-        inventoryRenderer.render()
-        spellBarRenderer.render()
+        inventoryRenderer.render(delta)
+        spellBarRenderer.render(currentFocus)
 
         stage.act(delta)
         stage.draw()

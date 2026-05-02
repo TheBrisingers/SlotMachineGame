@@ -17,6 +17,7 @@ class InventoryRenderer(
     private val shapeRenderer: ShapeRenderer,
 ) {
     private val font = BitmapFont()
+    private var errorFlashTimer = 0f
 
     // On charge les textures dans une Map
     private val textures = mapOf(
@@ -26,16 +27,36 @@ class InventoryRenderer(
         Symbol.WIND.name to Texture(Gdx.files.internal("runes/wind.png"))
     )
 
-    fun render() {
+    fun render(delta: Float) {
+        if (errorFlashTimer > 0) {
+            errorFlashTimer -= delta
+        } else {
+            inventoryState.missingResources.clear()
+        }
+
         drawInventoryZone()
+    }
+
+    fun triggerErrorFlash() {
+        errorFlashTimer = 0.5f // Le flash dure 0.5 secondes
     }
 
     private fun drawInventoryZone() {
         batch.begin()
         inventoryState.counters.forEach { counter ->
             val texture = textures[counter.title]
+            val isMissing = inventoryState.missingResources.contains(counter.title)
 
             if (texture != null) {
+                // Si la ressource manque, on teinte le sprite et le texte
+                if (isMissing && errorFlashTimer > 0f) {
+                    batch.color = Color(1f, 0.3f, 0.3f, 1f) // Rouge doux / Rose
+                    font.color = Color(1f, 0.5f, 0.5f, 1f)
+                } else {
+                    batch.color = Color.WHITE
+                    font.color = Color.WHITE
+                }
+
                 // 1. Dessiner le sprite
                 batch.draw(texture, counter.zone.x, counter.zone.y, counter.zone.width, counter.zone.height)
 
@@ -50,5 +71,6 @@ class InventoryRenderer(
 
     fun dispose() {
         font.disposeSafely()
+        textures.values.forEach { it.disposeSafely() }
     }
 }
