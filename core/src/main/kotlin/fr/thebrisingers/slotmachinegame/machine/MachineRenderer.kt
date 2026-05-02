@@ -8,10 +8,13 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import fr.thebrisingers.slotmachinegame.data.PANEL_X
+import fr.thebrisingers.slotmachinegame.data.PANEL_Y
 import fr.thebrisingers.slotmachinegame.data.SPELLS_H
 import fr.thebrisingers.slotmachinegame.data.WORLD_W
 import fr.thebrisingers.slotmachinegame.inventory.InventoryState
 import ktx.assets.disposeSafely
+import kotlin.math.roundToInt
 
 class MachineRenderer(
     private val machineState: MachineState,
@@ -21,11 +24,48 @@ class MachineRenderer(
 ) {
     private val textureFocused = Texture(Gdx.files.internal("lever/lever_focused.png"))
     private val textureActivation = Texture(Gdx.files.internal("lever/lever_activated.png")) // Nouveau fichier
+    private val wheelBackground = Texture(Gdx.files.internal("wheel/roue_a_sous.png")) // Nouveau fichier
+    private val background = Texture(Gdx.files.internal("wheel/background.png")) // Nouveau fichier
+    private val oneSlot = Texture(Gdx.files.internal("wheel/slot machine-sheet.png")) // Nouveau fichier
+    private val threeSlots = Texture(Gdx.files.internal("wheel/3 slot machinet.png")) // Nouveau fichier
+
+    private val earthRune = Texture(Gdx.files.internal("runes/earth.png"))
+    private val fireRune = Texture(Gdx.files.internal("runes/fire.png"))
+    private val waterRune = Texture(Gdx.files.internal("runes/water.png"))
+    private val windRune = Texture(Gdx.files.internal("runes/wind.png"))
+
+    val frameDuration = 0.01f
+
+
+    fun oneSlotAnimation(initialFrame: Int): Animation<TextureRegion> = run {
+        val allFrames = TextureRegion.split(oneSlot, 150, 200)[0]
+        // On réordonne le tableau pour commencer à 'initialFrame'
+        val rotatedFrames = Array(allFrames.size) { i ->
+            allFrames[(i + initialFrame) % allFrames.size]
+        }
+        Animation(frameDuration, *rotatedFrames)
+    }.apply {
+        playMode = Animation.PlayMode.LOOP
+    }
+
+    val decalage = 17
+
+    val animation0 = oneSlotAnimation(0)
+    val animation1 = oneSlotAnimation(decalage * 1)
+    val animation2 = oneSlotAnimation(decalage * 2)
+    val animation3 = oneSlotAnimation(decalage * 3)
+    val threeSlotsAnimation: Animation<TextureRegion> = run {
+        val attackFrames = TextureRegion.split(threeSlots, 150, 200)[0]
+        Animation(0.08f, *attackFrames)
+    }.apply {
+        playMode = Animation.PlayMode.LOOP
+    }
     private val focusAnimation: Animation<TextureRegion>
     private val activationAnimation: Animation<TextureRegion>
     private val idleRegion: TextureRegion
 
-    private var stateTime = 0f
+    private var stateTimeLever = 0f
+    private var stateTimeWheel = 0f
     private var isActivating = false
 
     private val font = BitmapFont()
@@ -47,7 +87,7 @@ class MachineRenderer(
     // Appelé par GameScreen quand on appuie sur Espace
     fun triggerActivation() {
         isActivating = true
-        stateTime = 0f
+        stateTimeLever = 0f
     }
 
     fun render(delta: Float, isFocused: Boolean) {
@@ -61,25 +101,72 @@ class MachineRenderer(
         val posX = WORLD_W - buttonWidth - gap
         val posY = SPELLS_H + 45f
 
-        stateTime += delta
+        stateTimeLever += delta
+        stateTimeWheel += delta
+
+        val runePosDelta = -137 / 68
+        val totalDelta = (((runePosDelta * stateTimeLever)/ frameDuration % 137 +1) /2).roundToInt()*2
+
+        println(totalDelta)
+        batch.begin()
+
+        // Dessin du fond de la roue
+        batch.draw(wheelBackground, PANEL_X, PANEL_Y, 240f, 180f)
+
+        // Dessin des slots avec leur propre stateTime
+        val currentOneSlotFrame1 = animation0.getKeyFrame(stateTimeLever)
+        val currentOneSlotFrame2 = animation1.getKeyFrame(stateTimeLever)
+        val currentOneSlotFrame3 = animation2.getKeyFrame(stateTimeLever)
+        val currentOneSlotFrame4 = animation3.getKeyFrame(stateTimeLever)
+        val decalageX = -56f
+        val decalageY = 36
+
+        batch.draw(currentOneSlotFrame1, PANEL_X + decalageX, PANEL_Y + decalageY, 150f, 200f)
+        batch.draw(currentOneSlotFrame2, PANEL_X + decalageX, PANEL_Y + decalageY, 150f, 200f)
+        batch.draw(currentOneSlotFrame3, PANEL_X + decalageX, PANEL_Y + decalageY, 150f, 200f)
+        batch.draw(currentOneSlotFrame4, PANEL_X + decalageX, PANEL_Y + decalageY, 150f, 200f)
+
+        batch.draw(currentOneSlotFrame1, PANEL_X + decalageX + 57f, PANEL_Y + decalageY, 150f, 200f)
+        batch.draw(currentOneSlotFrame2, PANEL_X + decalageX + 57f, PANEL_Y + decalageY, 150f, 200f)
+        batch.draw(currentOneSlotFrame3, PANEL_X + decalageX + 57f, PANEL_Y + decalageY, 150f, 200f)
+        batch.draw(currentOneSlotFrame4, PANEL_X + decalageX + 57f, PANEL_Y + decalageY, 150f, 200f)
+
+        batch.draw(currentOneSlotFrame1, PANEL_X + decalageX + 57f + 56f, PANEL_Y + decalageY, 150f, 200f)
+        batch.draw(currentOneSlotFrame2, PANEL_X + decalageX + 57f + 56f, PANEL_Y + decalageY, 150f, 200f)
+        batch.draw(currentOneSlotFrame3, PANEL_X + decalageX + 57f + 56f, PANEL_Y + decalageY, 150f, 200f)
+        batch.draw(currentOneSlotFrame4, PANEL_X + decalageX + 57f + 56f, PANEL_Y + decalageY, 150f, 200f)
+
+        // Obtenez la frame actuelle de l'animation threeSlotsAnimation
+        val currentThreeSlotsFrame = threeSlotsAnimation.getKeyFrame(stateTimeWheel)
+        //batch.draw(currentThreeSlotsFrame, PANEL_X, PANEL_Y, 150f, 200f)
+
+        batch.draw(earthRune, PANEL_X + 40f, PANEL_Y + 137 + totalDelta, 32f, 32f)
+        batch.draw(earthRune, PANEL_X + 40f, PANEL_Y + 0, 32f, 32f)
+
+        batch.end()
 
         batch.begin()
+        batch.draw(background, PANEL_X, PANEL_Y, 240f, 180f)
+        batch.end()
+
+        batch.begin()
+
         val frame = when {
             // 1. Priorité à l'animation d'activation (le clic)
             isActivating -> {
-                if (activationAnimation.isAnimationFinished(stateTime)) {
+                if (activationAnimation.isAnimationFinished(stateTimeLever)) {
                     isActivating = false
-                    stateTime = 0f
-                    activationAnimation.getKeyFrame(stateTime)
+                    stateTimeLever = 0f
+                    activationAnimation.getKeyFrame(stateTimeLever)
                 } else {
-                    activationAnimation.getKeyFrame(stateTime)
+                    activationAnimation.getKeyFrame(stateTimeLever)
                 }
             }
             // 2. Si on a le focus, on joue l'anim de brillance
-            isFocused -> focusAnimation.getKeyFrame(stateTime)
+            isFocused -> focusAnimation.getKeyFrame(stateTimeLever)
             // 3. Sinon, repos
             else -> {
-                stateTime = 0f
+                stateTimeLever = 0f
                 idleRegion
             }
         }
@@ -88,6 +175,7 @@ class MachineRenderer(
         font.draw(batch, "$coinsValue", posX, posY + 3f)
 
         batch.end()
+
     }
 
     fun dispose() {
