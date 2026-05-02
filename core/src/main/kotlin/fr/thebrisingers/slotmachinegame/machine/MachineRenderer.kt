@@ -37,10 +37,15 @@ class MachineRenderer(
     private val rowSpacingY = -11f
     private val maxSpinSymbols = 20
 
+
+    val coinX = PANEL_X + PANEL_W / 2 - 8f
+    val coinY = WORLD_H - 25f
+
     private val textureFocused = Texture(Gdx.files.internal("lever/lever_focused.png"))
     private val textureActivation = Texture(Gdx.files.internal("lever/lever_activated.png"))
     private val wheelBackground = Texture(Gdx.files.internal("wheel/roue_a_sous.png"))
     private val background = Texture(Gdx.files.internal("wheel/background.png"))
+    private val simpleCoin = Texture(Gdx.files.internal("runes/simple_coin.png"))
 
     private val symbolTextures: Map<Symbol, Texture> = mapOf(
         Symbol.WATER to Texture(Gdx.files.internal("wheel/water_slot.png")),
@@ -181,6 +186,19 @@ class MachineRenderer(
         batch.draw(leverFrame, WORLD_W - buttonWidth - gap, SPELLS_H + 45f, buttonWidth, buttonHeight)
         font.color = Color.WHITE
         font.draw(batch, "${inventoryState.coins}", PANEL_X + PANEL_W / 2 - 8f, WORLD_H - 22f)
+
+        font.data.setScale(0.4f) // Texte assez petit
+        // On le place 10 pixels sous le levier (posY - 10f)
+        val priceText = "$SPIN_PRICE"
+        font.draw(batch, priceText, WORLD_W - buttonWidth - gap + 10f, SPELLS_H + 45f - 5f)
+
+        // On dessine l'icône de la pièce juste à côté du chiffre
+        // On ajuste la position Y (-15f) pour que l'icône soit alignée avec le texte
+        batch.draw(simpleCoin, WORLD_W - buttonWidth - gap + 14f, SPELLS_H + 45f - 14f, 12f, 12f)
+
+
+        font.data.setScale(1f)
+        font.draw(batch, priceText, coinX, coinY + 3f)
         batch.end()
     }
 
@@ -210,6 +228,19 @@ class MachineRenderer(
                 val frames = symbolFrames[symbol] ?: continue
                 val posY = PANEL_Y + decalageY + (renderRows - 1 - row) * rowSpacingY
 
+
+                font.color = Color.WHITE
+                font.data.setScale(0.4f) // Texte assez petit
+                // On le place 10 pixels sous le levier (posY - 10f)
+                val priceText = "$SPIN_PRICE"
+                font.draw(batch, priceText, posX + 10f, posY - 5f)
+
+                // On dessine l'icône de la pièce juste à côté du chiffre
+                // On ajuste la position Y (-15f) pour que l'icône soit alignée avec le texte
+                batch.draw(simpleCoin, posX + 14f, posY - 14f, 12f, 12f)
+
+
+                font.data.setScale(1f)
                 batch.draw(frames[frameIndex], posX, posY, symbolDisplayW, symbolDisplayH)
             }
         }
