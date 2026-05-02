@@ -22,18 +22,21 @@ object InitHero {
     }
     val attackAnimation: Animation<TextureRegion> = run {
         val attackFrames = TextureRegion.split(playerAttackSheet, 24, 24)[0]
+        attackFrames.forEach { it.flip(true, false) }
         Animation(0.15f, *attackFrames)
     }.apply {
         playMode = Animation.PlayMode.NORMAL
     }
     val getHitAnimation: Animation<TextureRegion> = run {
         val hitFrames = TextureRegion.split(playerGetItSheet, 24, 24)[0]
+        hitFrames.forEach { it.flip(true, false) }
         Animation(0.1f, *hitFrames)
     }.apply {
         playMode = Animation.PlayMode.NORMAL
     }
     val deathAnimation: Animation<TextureRegion> = run {
         val deathFrames = TextureRegion.split(playerDeathSheet, 24, 24)[0]
+        deathFrames.forEach { it.flip(true, false) }
         Animation(0.15f, *deathFrames)
     }.apply {
         playMode = Animation.PlayMode.NORMAL
