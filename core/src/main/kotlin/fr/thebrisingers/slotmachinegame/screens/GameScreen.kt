@@ -146,6 +146,11 @@ class GameScreen : KtxScreen, InputAdapter() {
     }
 
     private fun applyAction() {
+        val battleDone = gameRenderer.battleRenderer.isAnimationDone
+        val machineDone = gameRenderer.machineRenderer.isAnimationDone
+
+        if (!battleDone || !machineDone) return
+
         when (val target = focusManager.current) {
             is FocusTarget.Spin -> {
                 if (inventoryState.coins >= SPIN_PRICE) {

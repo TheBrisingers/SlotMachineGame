@@ -37,7 +37,6 @@ class MachineRenderer(
     private val rowSpacingY = -11f
     private val maxSpinSymbols = 20
 
-
     val coinX = PANEL_X + PANEL_W / 2 - 8f
     val coinY = WORLD_H - 25f
 
@@ -68,6 +67,9 @@ class MachineRenderer(
     private val idleRegion: TextureRegion
     private var stateTimeLever = 0f
     private var isActivating = false
+
+    val isAnimationDone: Boolean
+        get() = !isActivating && reelStates.all { it.stopped }
 
     var onSymbolTick: (() -> Unit)? = null
 
@@ -125,7 +127,6 @@ class MachineRenderer(
 
     private fun getLimitedWheel(wheel: List<Symbol>): List<Symbol> =
         if (wheel.size > maxSpinSymbols) wheel.take(maxSpinSymbols) else wheel
-
     fun render(delta: Float, isFocused: Boolean) {
         stateTimeLever += delta
 
@@ -231,7 +232,6 @@ class MachineRenderer(
                 val symbol = wheel[symbolIndex.coerceIn(0, wheel.size - 1)]
                 val frames = symbolFrames[symbol] ?: continue
                 val posY = PANEL_Y + decalageY + (renderRows - 1 - row) * rowSpacingY
-
 
                 font.color = Color.WHITE
                 font.data.setScale(0.4f) // Texte assez petit
