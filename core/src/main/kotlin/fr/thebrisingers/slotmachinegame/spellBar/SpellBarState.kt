@@ -1,6 +1,7 @@
 package fr.thebrisingers.slotmachinegame.spellBar
 
 import fr.thebrisingers.slotmachinegame.FocusTarget
+import fr.thebrisingers.slotmachinegame.data.*
 import fr.thebrisingers.slotmachinegame.data.spell.Spell
 import fr.thebrisingers.slotmachinegame.data.spell.spellCollection
 
@@ -21,12 +22,12 @@ class SpellBarState(
             is FocusTarget.Spin -> {
                 title = "Table des Gains"
                 description =
-                    "Runes : x2 (+1) | x3 (+3)\n" +
-                        "Soin  : x2 (10%) | x3 (25%)\n" +
-                        "Pièces: x2 (1.5x) | x3 (3x)\n" +
-                        "Triple pièces: x2 (3x) | x3 (5x)\n" +
-                        "Sacs  : x2 (5x) | x3 (10x)\n" +
-                        "Jokers: x3 (300 pièces)\n"
+                    "Runes : x2 (+${FIRE_SYMBOL_EARNING.twoSymbolWin}) | x3 (+${FIRE_SYMBOL_EARNING.threeSymbolWin})\n" +
+                        "Soin  : x2 (+${HEAL_SYMBOL_EARNING.twoSymbolWin}) | x3 (+${HEAL_SYMBOL_EARNING.threeSymbolWin})\n" +
+                        "Pièces: x2 (+${SIMPLE_COIN_SYMBOL_EARNING.twoSymbolWin}) | x3 (+${SIMPLE_COIN_SYMBOL_EARNING.threeSymbolWin})\n" +
+                        "Triple pièces: x2 (+${MULTIPLE_COIN_SYMBOL_EARNING.twoSymbolWin}) | x3 (+${MULTIPLE_COIN_SYMBOL_EARNING.threeSymbolWin})\n" +
+                        "Sacs  : x2 (+${COIN_BAG_SYMBOL_EARNING.twoSymbolWin}) | x3 (+${COIN_BAG_SYMBOL_EARNING.threeSymbolWin})\n" +
+                        "Jokers: x3 (+${JOKER_SYMBOL_EARNING.threeSymbolWin})\n"
             }
         }
     }
