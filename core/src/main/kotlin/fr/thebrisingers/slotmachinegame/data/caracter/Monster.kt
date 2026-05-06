@@ -4,7 +4,7 @@ data class Monster(
     val id: Int,
     val category: Category,
     val faction: Faction,
-    val difficultyMultiplier: Float = 1f
+    val difficultyMultiplier: Float = 0.75f
 ) : Entity {
 
     val maxHealth = ((category.health + faction.healthModifier) * difficultyMultiplier).toInt()

@@ -35,10 +35,7 @@ class MachineRenderer(
     val decalageY = 36f
     private val rowOffsetX = 57f
     private val rowSpacingY = -11f
-    private val maxSpinSymbols = 20
-
-    val coinX = PANEL_X + PANEL_W / 2 - 8f
-    val coinY = WORLD_H - 25f
+    private val maxSpinSymbols = 10
 
     private val textureFocused = Texture(Gdx.files.internal("lever/lever_focused.png"))
     private val textureActivation = Texture(Gdx.files.internal("lever/lever_activated.png"))

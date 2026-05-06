@@ -51,8 +51,8 @@ class SpellBarRenderer(
     private val cardPadding = 5f
     private val cardVerticalContentPadding = 5f // Padding for top and bottom of the card content
 
-    private val costValueFontScale = 0.5f // Adjusted font for cost values
-    private val titleFontScale = 0.5f // Adjusted font for title
+    private val costValueFontScale = 0.4f // Adjusted font for cost values
+    private val titleFontScale = 0.4f // Adjusted font for title
 
     private val glyphLayout = GlyphLayout() // For measuring text
 
@@ -89,7 +89,7 @@ class SpellBarRenderer(
 
     fun render(currentFocus: FocusTarget) {
         batch.begin()
-        batch.draw(background, 0f, 0f,WORLD_W,99f)
+        batch.draw(background, 0f, 0f, WORLD_W, 99f)
         batch.end()
         drawSpellsZone(currentFocus)
         drawDescriptionZone()
@@ -132,14 +132,15 @@ class SpellBarRenderer(
 
                 // 1. Draw main spell book icon (top-left)
                 val mainBookTexture = getSpellBookTexture(spell.cost)
-                val mainBookIconX = cardX + cardWidth - cardPadding - mainBookIconSize / 2
-                val mainBookIconY = cardY + cardHeight - cardPadding - mainBookIconSize / 2
-                batch.draw(mainBookTexture, mainBookIconX, mainBookIconY, mainBookIconSize, mainBookIconSize)
 
-                // 2. Draw spell name (title) below main icon, centered, smaller font, wrap
+                batch.setColor(1f, 1F, 1f, 0.15f)
+                batch.draw(mainBookTexture, cardX + cardWidth / 4, cardY + cardWidth / 8, cardWidth / 2, cardWidth / 2)
+                batch.setColor(1f, 1F, 1f, 1f)
+
+                // 2. Draw spell name
                 font.data.setScale(titleFontScale)
                 glyphLayout.setText(font, spell.name, Color.BLACK, cardWidth - 2 * cardPadding, Align.center, true)
-                val titleTextY = mainBookIconY - cardPadding // Position below main icon
+                val titleTextY = cardY + cardHeight - cardPadding - 4 // Position below main icon
                 font.draw(batch, glyphLayout, cardX + cardPadding, titleTextY) // font.draw uses top-left for Y
 
                 // 3. Draw cost icons and values (bottom-middle)
@@ -154,7 +155,8 @@ class SpellBarRenderer(
                 var currentCostElementX = cardX + (cardWidth - totalCostIconsAndValuesWidth) / 2
 
                 // Position cost elements at the bottom of the card
-                val costIconsY = cardY + cardVerticalContentPadding + costValueLineHeight // Icons above their values, with padding from bottom
+                val costIconsY =
+                    cardY + cardVerticalContentPadding + costValueLineHeight // Icons above their values, with padding from bottom
                 font.data.setScale(costValueFontScale)
                 costElements.forEach { (texture, costValue) ->
                     batch.draw(texture, currentCostElementX, costIconsY, costIconSize, costIconSize)
@@ -193,58 +195,78 @@ class SpellBarRenderer(
 
     private fun drawDescriptionZone() {
         batch.begin()
-        // Dessin du fond
         batch.draw(paperBackground, SPELLS_DESCRIPTION_X, SPELLS_Y, SPELLS_DESCRIPTION_W, SPELLS_H)
 
         val paddingX = 15f
         val titleY = SPELLS_Y + SPELLS_H - 12f
-        val descriptionTopY = titleY - 22f // Y de départ du texte (le haut du bloc)
+        val descriptionTopY = titleY - 22f
+        val detailsY = descriptionTopY - 26f
 
         // --- TITRE ---
-        font.color = Color.BLACK
-        font.data.setScale(0.55f)
-        font.draw(batch, spellBarState.title, SPELLS_DESCRIPTION_X + paddingX, titleY)
 
-        // --- DESCRIPTION ---
-        font.data.setScale(0.38f)
-        val lineH = font.lineHeight // Hauteur d'une ligne de texte
-        val iconSize = 8f
-        val textIndent = 38f // Espace à gauche pour les icônes
-        val iconX = SPELLS_DESCRIPTION_X + paddingX
+        if (spellBarState.title.isEmpty()) {
 
-        if (spellBarState.title == "Table des Gains") {
-            val verticalOffset = (lineH + iconSize) / 2f
+            val iconSize = 10f
+            val rowHeight = 8f  // hauteur fixe par ligne, indépendante de la police
+            val iconX = SPELLS_DESCRIPTION_X + paddingX
 
-            // Ligne 1 (Index 0) : Les 4 runes côte à côte
-            val firstLineIconY = descriptionTopY - verticalOffset
-            val runes = listOf(fireSymbol, waterSymbol, earthSymbol, windSymbol)
-            val smallRuneSize = 8f
-            runes.forEachIndexed { index, texture ->
-                batch.draw(texture, iconX + (index * 9f), firstLineIconY + 1f, smallRuneSize, smallRuneSize)
+            // Chaque ligne : icône + texte formaté
+            // Les 4 runes partagent la même ligne et le même gain
+            val rows = listOf(
+                listOf<Texture>() to
+                    ("Runes" to ""),
+                listOf(fireSymbol, waterSymbol, earthSymbol, windSymbol) to
+                    ("x2 = + ${FIRE_SYMBOL_EARNING.twoSymbolWin}" to "x3 = + ${FIRE_SYMBOL_EARNING.threeSymbolWin}"),
+                listOf<Texture>() to
+                    ("Santé" to ""),
+                listOf(healIcon) to
+                    ("x2 = + ${HEAL_SYMBOL_EARNING.twoSymbolWin}" to "x3 = + ${HEAL_SYMBOL_EARNING.threeSymbolWin}"),
+                listOf<Texture>() to
+                    ("Pièces" to ""),
+                listOf(simpleCoinIcon) to
+                    ("x2 = + ${SIMPLE_COIN_SYMBOL_EARNING.twoSymbolWin}" to "x3 = + ${SIMPLE_COIN_SYMBOL_EARNING.threeSymbolWin}"),
+                listOf(multiCoinIcon) to
+                    ("x2 = + ${MULTIPLE_COIN_SYMBOL_EARNING.twoSymbolWin}" to "x3 = + ${MULTIPLE_COIN_SYMBOL_EARNING.threeSymbolWin}"),
+                listOf(bagIcon) to
+                    ("x2 = + ${COIN_BAG_SYMBOL_EARNING.twoSymbolWin}" to "x3 = + ${COIN_BAG_SYMBOL_EARNING.threeSymbolWin}"),
+            )
+
+            val maxIconX = iconX + (rows.maxOf { it.first.size } - 1) * (iconSize - 2f)
+
+            rows.forEachIndexed { index, (icons, text) ->
+                val rowY = titleY - index * rowHeight
+                val iconY = rowY - iconSize  // aligne le bas de l'icône avec le bas du texte
+
+                icons.forEachIndexed { i, texture ->
+                    batch.draw(texture, maxIconX - (i * (iconSize - 2f)), iconY, iconSize, iconSize)
+                }
+
+                val labelX = if (icons.isEmpty()) iconX + 4f else (maxIconX + iconSize + 4f)
+                if (icons.isEmpty()) font.data.setScale(0.40f) else font.data.setScale(0.35f)
+                font.draw(batch, text.first, labelX, rowY - iconSize / 4)
+                font.draw(batch, text.second, labelX + 30f, rowY - iconSize / 4)
             }
-
-            // Lignes suivantes (Index 1 à 5) : Loot unique
-            val otherIcons = listOf(healIcon, simpleCoinIcon, multiCoinIcon, bagIcon, jokerIcon)
-            otherIcons.forEachIndexed { index, texture ->
-                val lineIndex = index + 1
-                // On calcule le Y du haut de la ligne correspondante
-                val lineTopY = descriptionTopY - (lineIndex * lineH) - 6f
-                val iconY = lineTopY + (lineH - iconSize) / 2f
-
-                batch.draw(texture, iconX + 28f, iconY, iconSize, iconSize)
-            }
-
-            // Dessin du texte décalé
-            glyphLayout.setText(font, spellBarState.description, Color.BLACK,
-                SPELLS_DESCRIPTION_W - paddingX - textIndent, Align.left, true)
-            // Le texte se dessine à partir de descriptionTopY (le haut)
-            font.draw(batch, glyphLayout, SPELLS_DESCRIPTION_X + paddingX + textIndent, descriptionTopY)
 
         } else {
-            // Mode normal pour les sorts
-            glyphLayout.setText(font, spellBarState.description, Color.BLACK,
-                SPELLS_DESCRIPTION_W - (paddingX * 2), Align.left, true)
+            font.color = Color.BLACK
+            font.data.setScale(0.55f)
+            font.draw(batch, spellBarState.title, SPELLS_DESCRIPTION_X + paddingX, titleY)
+
+            font.data.setScale(0.38f)
+            glyphLayout.setText(
+                font, spellBarState.description, Color.BLACK,
+                SPELLS_DESCRIPTION_W - (paddingX * 2), Align.left, true
+            )
             font.draw(batch, glyphLayout, SPELLS_DESCRIPTION_X + paddingX, descriptionTopY)
+
+            spellBarState.details.forEachIndexed { i, detail ->
+                font.data.setScale(0.38f)
+                glyphLayout.setText(
+                    font, detail, Color.BLACK,
+                    SPELLS_DESCRIPTION_W - (paddingX * 2), Align.left, true
+                )
+                font.draw(batch, glyphLayout, SPELLS_DESCRIPTION_X + paddingX, detailsY - i * 8f)
+            }
         }
 
         font.data.setScale(1f)

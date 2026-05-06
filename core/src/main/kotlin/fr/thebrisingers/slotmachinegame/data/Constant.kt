@@ -5,8 +5,8 @@ import fr.thebrisingers.slotmachinegame.data.spell.Symbol
 import kotlin.math.round
 
 const val SPIN_PRICE = 5
-const val INITIAL_COINS = 50
-const val HERO_MAX_HEALTH = 50
+const val INITIAL_COINS = 100
+const val HERO_MAX_HEALTH = 100
 
 const val MAX_WAVES = 5
 
@@ -15,9 +15,9 @@ val WATER_SYMBOL_EARNING = Earning(5, 12)
 val EARTH_SYMBOL_EARNING = Earning(5, 12)
 val WIND_SYMBOL_EARNING = Earning(5, 12)
 
-val SIMPLE_COIN_SYMBOL_EARNING = Earning((1.2 * SPIN_PRICE).toInt(), 2 * SPIN_PRICE)
-val MULTIPLE_COIN_SYMBOL_EARNING = Earning(3 * SPIN_PRICE, 5 * SPIN_PRICE)
-val COIN_BAG_SYMBOL_EARNING = Earning(5 * SPIN_PRICE, 10 * SPIN_PRICE)
+val SIMPLE_COIN_SYMBOL_EARNING = Earning(2 * SPIN_PRICE, 4 * SPIN_PRICE)
+val MULTIPLE_COIN_SYMBOL_EARNING = Earning(6 * SPIN_PRICE, 10 * SPIN_PRICE)
+val COIN_BAG_SYMBOL_EARNING = Earning(30 * SPIN_PRICE, 20 * SPIN_PRICE)
 
 val JOKER_SYMBOL_EARNING = Earning(0, 100 * SPIN_PRICE)
 
@@ -69,7 +69,7 @@ const val INVENTORY_Y = COMBAT_Y
 // Bande sorts
 const val SPELLS_X = 0f
 const val SPELLS_Y = 0f
-const val SPELLS_W = 2 * WORLD_W / 3      // 1280f — pleine largeur
+const val SPELLS_W = 3 * WORLD_W / 4      // 1280f — pleine largeur
 const val SPELLS_DESCRIPTION_X = SPELLS_W
 const val SPELLS_DESCRIPTION_W = WORLD_W - SPELLS_W
 
@@ -88,11 +88,5 @@ const val ENEMY_W = 32f
 const val ENEMY_H = 32f
 const val ENEMY_START_X = COMBAT_X + PADDING_BATTLES   // premier ennemi
 const val ENEMY_Y = COMBAT_Y + FLOOR_Y
-
-val ENEMY_Y_OFFSET = listOf(0f, ENEMY_H / 3, 2 * ENEMY_H / 3)
 const val ENEMY_GAP = 12f                  // espace entre chaque ennemi
 
-// Boutons de sorts
-const val SPELL_BTN_H = 110f             // hauteur bouton dans la bande de 150
-const val SPELL_BTN_Y = 20f             // marge depuis le bas
-const val SPELL_BTN_GAP = 20f             // espace entre boutons
