@@ -142,7 +142,7 @@ class BattleRenderer(
 
     private fun drawMonsterAnimations() {
         batch.begin()
-        battleState.monsters.reversed().forEachIndexed { i, monster ->
+        battleState.monsters.forEachIndexed { i, monster ->
             val hitAnim = getHitAnim(monster.faction)
             val deathAnim = getDeathAnim(monster.faction)
             val attackAnim = getAttackAnim(monster.faction)
@@ -233,7 +233,7 @@ class BattleRenderer(
             battleState.hero.health, battleState.hero.maxHealth, barWidth, barHeight)
 
         // Barres HP Monstres
-        battleState.monsters.reversed().forEachIndexed { i, monster ->
+        battleState.monsters.forEachIndexed { i, monster ->
             if (monster.isAlive) {
                 val x = ENEMY_START_X + i * (ENEMY_W + ENEMY_GAP) + (ENEMY_W - barWidth) / 2f
                 drawHealthBar(x, ENEMY_Y + ENEMY_H + 10f,
@@ -269,7 +269,7 @@ class BattleRenderer(
         font.draw(batch, "${battleState.hero.health}/${battleState.hero.maxHealth}", MAGE_X + 10f, MAGE_Y + MAGE_H + 16f)
 
         // HP ennemis
-        battleState.monsters.reversed().forEachIndexed { i, monster ->
+        battleState.monsters.forEachIndexed { i, monster ->
             if (monster.isAlive) {
                 val x = ENEMY_START_X + i * (ENEMY_W + ENEMY_GAP)
                 val circleX = x + ENEMY_W - 10f

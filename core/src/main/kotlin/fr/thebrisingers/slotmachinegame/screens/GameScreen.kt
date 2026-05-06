@@ -89,6 +89,12 @@ class GameScreen : KtxScreen, InputAdapter() {
 
         // Apply spin results after animation is done
         if (pendingSpinIncomes != null && gameRenderer.machineRenderer.isAnimationDone) {
+            // Déclencher les animations pour chaque monstre qui va attaquer
+            battleState.monsters.forEachIndexed { index, monster ->
+                if (monster.attackThisTurn) {
+                    gameRenderer.battleRenderer.triggerMonsterAttack(index)
+                }
+            }
             inventoryState.updateCounters(pendingSpinIncomes!!.runes)
             inventoryState.addCoins(pendingSpinIncomes!!.coins)
             battleState.hero.heal(pendingSpinIncomes!!.heals)
@@ -132,7 +138,8 @@ class GameScreen : KtxScreen, InputAdapter() {
     override fun keyUp(keycode: Int): Boolean {
         // Si on est en fin de partie et qu'on appuie sur R, on pourrait reset le jeu
         if ((battleState.phase == TurnPhase.VICTORY || battleState.phase == TurnPhase.GAME_OVER)
-            && keycode == Keys.R) {
+            && keycode == Keys.R
+        ) {
             show() // Relance l'initialisation du jeu
             return true
         }
@@ -171,17 +178,11 @@ class GameScreen : KtxScreen, InputAdapter() {
                     inventoryState.spendCoins(SPIN_PRICE)
                     gameRenderer.machineRenderer.triggerActivation()
 
-                    // Déclencher les animations pour chaque monstre qui va attaquer
-                    battleState.monsters.forEachIndexed { index, monster ->
-                        if (monster.attackThisTurn) {
-                            gameRenderer.battleRenderer.triggerMonsterAttack(index)
-                        }
-                    }
-
                     pendingSpinIncomes = machineState.spin() // Store spin results
                     // Removed immediate data updates and battleState.advanceMonsterTurn()
                 }
             }
+
             is FocusTarget.Spell -> {
                 val spell = spellBarState.spells[target.index]
 
@@ -193,10 +194,11 @@ class GameScreen : KtxScreen, InputAdapter() {
                 val hitIndices = mutableSetOf<Int>()
                 spell.spellEffect.forEach { effect ->
                     when (effect.target) {
-                        Target.FRONT -> if (aliveIndices.isNotEmpty()) hitIndices.add(aliveIndices.first())
-                        Target.BACK -> if (aliveIndices.isNotEmpty()) hitIndices.add(aliveIndices.last())
+                        Target.FRONT -> if (aliveIndices.isNotEmpty()) hitIndices.add(aliveIndices.last())
+                        Target.BACK -> if (aliveIndices.isNotEmpty()) hitIndices.add(aliveIndices.first())
                         Target.ALL -> hitIndices.addAll(aliveIndices)
-                        Target.SELF -> { /* On ignore le héros pour l'anim de hit des monstres */ }
+                        Target.SELF -> { /* On ignore le héros pour l'anim de hit des monstres */
+                        }
                     }
                 }
 
@@ -210,7 +212,9 @@ class GameScreen : KtxScreen, InputAdapter() {
                     if (coinsFromKills > 0) inventoryState.addCoins(coinsFromKills)
 
                     // 3. Animation du héros
-                   gameRenderer.battleRenderer.triggerCast(hitIndices.toList())
+                    println(aliveIndices)
+                    println(hitIndices)
+                    gameRenderer.battleRenderer.triggerCast(hitIndices.toList())
                     spellCastSound?.play(3f)
 
                     val canSpin = inventoryState.coins >= SPIN_PRICE

@@ -42,8 +42,8 @@ class BattleState {
             val aliveMonsters = monsters.filter { it.isAlive }
             if (aliveMonsters.isNotEmpty()) {
                 val target: List<Entity> = when (effect.target) {
-                    Target.FRONT -> aliveMonsters.subList(0, 1)
-                    Target.BACK -> aliveMonsters.subList(aliveMonsters.size - 1, aliveMonsters.size)
+                    Target.FRONT -> aliveMonsters.subList(aliveMonsters.size - 1, aliveMonsters.size)
+                    Target.BACK -> aliveMonsters.subList(0, 1)
                     Target.ALL -> aliveMonsters
                     Target.SELF -> listOf(hero)
                 }
@@ -51,7 +51,7 @@ class BattleState {
                 target.forEach { entity ->
                     val wasAlive = if (entity is Monster) entity.isAlive else false
                     entity.takeDamage(effect.value)
-                    
+
                     // Si c'était un monstre vivant et qu'il vient de mourir
                     if (entity is Monster && wasAlive && !entity.isAlive) {
                         totalCoinsEarned += entity.coinReward
